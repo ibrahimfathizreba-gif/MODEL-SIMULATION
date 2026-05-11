@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Validation — AI Labor Sim</title>
+<meta name="description" content="Model validation: Predicted vs Actual 2000-2020, Monte Carlo 95% Confidence Intervals, and Arabic AI advisory report."/>
+<link rel="stylesheet" href="style.css"/>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
+<style>
+.metric-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 18px;background:var(--bg-card);
+  border:1px solid var(--border);border-radius:30px;
+  font-family:'JetBrains Mono',monospace;font-size:.82rem;
+}
+.metric-pill span{color:var(--accent-cyan);font-weight:700;font-size:1rem}
+.ai-report-header{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;
+}
+.ai-status{font-size:.72rem;padding:3px 10px;border-radius:20px;
+  background:rgba(0,230,118,.1);color:var(--accent-green)}
+.ai-status.loading{background:rgba(0,212,255,.1);color:var(--accent-cyan)}
+.ai-status.error{background:rgba(255,77,106,.1);color:var(--accent-red)}
+</style>
+</head>
+<body>
+<div class="app-layout">
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">⚡ AI Labor Sim</div>
+    <div class="logo-sub">2026 — 2046 · PLUS ULTRA</div>
+  </div>
+  <div class="sidebar-motto">Plus Ultra</div>
+  <div class="nav-section-label">Navigation</div>
+  <a class="nav-link" href="index.html"><span class="nav-icon">🏠</span> Overview</a>
+  <a class="nav-link" href="sector.html"><span class="nav-icon">🏭</span> Sector Analysis</a>
+  <a class="nav-link" href="ai_impact.html"><span class="nav-icon">🤖</span> AI Impact</a>
+  <a class="nav-link" href="macroeconomy.html"><span class="nav-icon">📈</span> Macroeconomy</a>
+  <a class="nav-link" href="scenarios.html"><span class="nav-icon">🔬</span> Scenario Builder</a>
+  <a class="nav-link active" href="validation.html"><span class="nav-icon">✅</span> Validation</a>
+  <div class="sidebar-controls">
+    <div class="ctrl-label">Simulation Controls</div>
+    <div class="ctrl-group">
+      <label>Scenario
+        <select id="select-scenario" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:.75rem">
+          <option value="moderate" selected>Moderate</option>
+          <option value="slow">Slow</option>
+          <option value="rapid">Rapid</option>
+        </select>
+      </label>
+    </div>
+    <div class="ctrl-group">
+      <label>AI Adoption Speed <span id="val-ai">1.0</span></label>
+      <input type="range" id="slider-ai" min="0.5" max="2.0" step="0.1" value="1.0"/>
+    </div>
+    <div class="ctrl-group">
+      <label>Monte Carlo Runs <span id="val-automation">1000</span></label>
+      <input type="range" id="slider-automation" min="100" max="3000" step="100" value="1000"/>
+    </div>
+    <div class="ctrl-group">
+      <label>Horizon <span id="val-horizon">20yr</span></label>
+      <input type="range" id="slider-horizon" min="5" max="30" step="5" value="20"/>
+    </div>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-header">
+    <h1 class="page-title">Validation & Confidence</h1>
+    <p class="page-subtitle">Model backtest 2000-2020 · Monte Carlo 95% CI · Arabic AI Advisory Report</p>
+  </div>
+  <div class="page-body fade-in">
+
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:var(--accent-cyan)">
+        <div class="kpi-label">Total Jobs</div>
+        <div class="kpi-value" id="kpi-jobs">—</div>
+        <div class="kpi-sub">Millions · Final Year</div>
+        <div class="kpi-bg-icon">💼</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-red)">
+        <div class="kpi-label">Unemployment Rate</div>
+        <div class="kpi-value" id="kpi-unem">—</div>
+        <div class="kpi-sub">% of Workforce</div>
+        <div class="kpi-bg-icon">📉</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-gold)">
+        <div class="kpi-label">GDP</div>
+        <div class="kpi-value" id="kpi-gdp">—</div>
+        <div class="kpi-sub">Trillion USD</div>
+        <div class="kpi-bg-icon">💰</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-purple)">
+        <div class="kpi-label">AI Adoption</div>
+        <div class="kpi-value" id="kpi-ai">—</div>
+        <div class="kpi-sub">% Economy-wide</div>
+        <div class="kpi-bg-icon">🤖</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-green)">
+        <div class="kpi-label">Validation Accuracy</div>
+        <div class="kpi-value" id="kpi-accuracy">—</div>
+        <div class="kpi-sub">ML Backtest</div>
+        <div class="kpi-bg-icon">✅</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="run-btn" onclick="runValidation()">▶ Run Validation</button>
+      <button class="run-btn" style="background:linear-gradient(135deg,var(--accent-purple),#6d28d9);color:#fff" onclick="runMonteCarlo()">🎲 Monte Carlo</button>
+      <button class="run-btn" style="background:linear-gradient(135deg,var(--accent-gold),#b8860b);color:#000" onclick="runArabicReport()">🌙 Arabic AI Report</button>
+      <span id="status-text" style="font-size:.78rem;color:var(--text-muted)">Run each analysis independently.</span>
+    </div>
+
+    <!-- Validation metrics pills -->
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap" id="metric-pills"></div>
+
+    <!-- Validation chart — Predicted vs Actual (Chart 6) -->
+    <div class="chart-grid cols-1">
+      <div class="chart-card full-width">
+        <div class="chart-title">Model Validation — Predicted vs Actual Unemployment (2000-2020)</div>
+        <div class="chart-subtitle">World Bank historical data vs model prediction — training backtest</div>
+        <div class="chart-container tall"><div id="chart-validation"></div></div>
+      </div>
+    </div>
+
+    <!-- Monte Carlo CI chart (Chart 7) -->
+    <div class="chart-grid cols-1">
+      <div class="chart-card full-width">
+        <div class="chart-title">Monte Carlo Simulation — 95% Confidence Interval</div>
+        <div class="chart-subtitle" id="mc-subtitle">1000 random iterations · shaded band = 2.5th–97.5th percentile</div>
+        <div class="chart-container tall"><div id="chart-montecarlo"></div></div>
+      </div>
+    </div>
+
+    <!-- Arabic AI Report -->
+    <div class="chart-card" style="margin-top:20px">
+      <div class="ai-report-header">
+        <div>
+          <div class="chart-title">تقرير المستشار الاقتصادي — Claude AI</div>
+          <div class="chart-subtitle">Professional Economic Advisory Report · Arabic Language · Powered by Claude</div>
+        </div>
+        <span class="ai-status" id="ai-status">Ready</span>
+      </div>
+      <div class="arabic-report" id="arabic-report">
+        انقر على زر "التقرير العربي" لتوليد تحليل اقتصادي شامل باللغة العربية بواسطة نموذج Claude AI.
+        <br/><br/>
+        يتطلب هذا متغير البيئة <code style="background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px">ANTHROPIC_API_KEY</code> ليكون معيناً على الخادم.
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Running validation…</div>
+</div>
+<div class="toast-container" id="toast-container"></div>
+
+<script src="app.js"></script>
+<script>
+let cVal, cMC;
+
+/* ── Validation ─────────────────────────────────────────── */
+async function runValidation() {
+  showLoading('Running model backtest 2000–2020…');
+  try {
+    // Also fetch sim data for KPIs
+    const [valData, simData] = await Promise.all([
+      apiFetch('/api/validate'),
+      apiFetch(`/api/simulate/${window.SIM.scenario}?horizon=${window.SIM.horizon}&adoption_speed=${window.SIM.adoptionSpeed}`),
+    ]);
+    window.SIM.data = simData;
+    updateKPIs(simData);
+
+    // Override accuracy KPI with real validation accuracy
+    const kpiAcc = document.getElementById('kpi-accuracy');
+    if (kpiAcc) kpiAcc.textContent = valData.accuracy + '%';
+
+    renderValidationChart(valData);
+    renderMetricPills(valData);
+    toast(`Validation complete — MAE: ${valData.mae} | Accuracy: ${valData.accuracy}%`, 'success');
+    document.getElementById('status-text').textContent =
+      `MAE = ${valData.mae} | Accuracy = ${valData.accuracy}%`;
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  finally { hideLoading(); }
+}
+
+function renderValidationChart(data) {
+  if (cVal) cVal.destroy();
+  cVal = lineChart('chart-validation', [
+    { name: 'Predicted (%)', data: data.predicted },
+    { name: 'Actual (%)',    data: data.actual },
+  ], data.years, '', v => v + '%');
+}
+
+function renderMetricPills(data) {
+  document.getElementById('metric-pills').innerHTML = `
+    <div class="metric-pill">MAE <span>${data.mae}</span></div>
+    <div class="metric-pill">Accuracy <span>${data.accuracy}%</span></div>
+    <div class="metric-pill">Period <span>2000–2020</span></div>
+    <div class="metric-pill">Source <span>World Bank</span></div>
+  `;
+}
+
+/* ── Monte Carlo ────────────────────────────────────────── */
+async function runMonteCarlo() {
+  const nSims = parseInt(document.getElementById('slider-automation').value) || 1000;
+  showLoading(`Running ${nSims} Monte Carlo iterations…`);
+  document.getElementById('mc-subtitle').textContent =
+    `${nSims} random iterations · shaded band = 2.5th–97.5th percentile`;
+  try {
+    const mc = await apiFetch(`/api/monte-carlo?n_simulations=${nSims}&horizon=${window.SIM.horizon}`);
+    renderMonteCarloChart(mc);
+    toast(`Monte Carlo complete — ${nSims} simulations`, 'success');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  finally { hideLoading(); }
+}
+
+function renderMonteCarloChart(mc) {
+  if (cMC) cMC.destroy();
+  cMC = rangeAreaChart(
+    'chart-montecarlo',
+    mc.years,
+    mc.unemployment.lower,
+    mc.unemployment.mean,
+    mc.unemployment.upper,
+    'Unemployment Rate — Monte Carlo 95% CI'
+  );
+}
+
+/* ── Arabic Report ──────────────────────────────────────── */
+async function runArabicReport() {
+  const statusEl = document.getElementById('ai-status');
+  const reportEl = document.getElementById('arabic-report');
+  statusEl.className = 'ai-status loading';
+  statusEl.textContent = 'Generating…';
+  reportEl.textContent = 'جارٍ توليد التقرير بواسطة نموذج Claude AI…';
+
+  showLoading('Generating Arabic economic advisory report…');
+  try {
+    const resp = await fetch(`${API_BASE}/api/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        scenario:       window.SIM.scenario,
+        horizon:        window.SIM.horizon,
+        adoption_speed: window.SIM.adoptionSpeed,
+      }),
+    });
+    const data = await resp.json();
+    if (data.success) {
+      reportEl.textContent = data.report;
+      statusEl.className = 'ai-status';
+      statusEl.textContent = `✓ Claude | ${data.output_tokens} tokens`;
+      toast('Arabic report generated successfully', 'success');
+    } else {
+      reportEl.textContent = data.report || data.error || 'Error generating report.';
+      statusEl.className = 'ai-status error';
+      statusEl.textContent = '✕ Error';
+      toast('Report error — check ANTHROPIC_API_KEY', 'error');
+    }
+  } catch(e) {
+    reportEl.textContent = 'خطأ في الاتصال بالخادم: ' + e.message;
+    statusEl.className = 'ai-status error';
+    statusEl.textContent = '✕ Error';
+    toast('Error: ' + e.message, 'error');
+  } finally { hideLoading(); }
+}
+
+// Adjust slider label override for this page (MC runs)
+document.addEventListener('DOMContentLoaded', () => {
+  const sl = document.getElementById('slider-automation');
+  const vl = document.getElementById('val-automation');
+  if (sl && vl) {
+    sl.addEventListener('input', () => { vl.textContent = sl.value; });
+    vl.textContent = sl.value;
+  }
+  // Auto-run validation on load
+  runValidation();
+});
+</script>
+</body>
+</html>
