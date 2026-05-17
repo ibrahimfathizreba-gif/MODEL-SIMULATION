@@ -14,7 +14,7 @@ from backend.simulation import (
     sensitivity_analysis,
 )
 from backend.ml_forecaster import forecast_unemployment
-from backend.ai_analyzer import analyze_with_claude
+from backend.local_llm_analyzer import analyze_with_local_llm, list_available_models
 
 app = FastAPI(
     title="AI Labor Market Impact Simulation API",
@@ -43,6 +43,7 @@ class AnalyzeRequest(BaseModel):
     scenario:       Optional[str]   = "moderate"
     horizon:        Optional[int]   = 20
     adoption_speed: Optional[float] = 1.0
+    model:          Optional[str]   = None   # e.g. "kimi-k2.6:cloud" or "qwen3.5:9b"
 
 
 # ── Endpoints ──────────────────────────────────────────────────────────────────
@@ -126,17 +127,23 @@ def monte_carlo(n_simulations: int = 1000, horizon: int = 20):
 @app.post("/api/analyze")
 def analyze(body: AnalyzeRequest = Body(...)):
     """
-    Run simulation then send results to Claude API.
-    Returns Professional Economic Advisory Report in Arabic.
+    Run simulation then send results to a local/cloud Ollama LLM
+    (qwen3.5 / kimi-k2.6). Returns Arabic Economic Advisory Report.
     """
     try:
         results  = run_scenario(body.scenario, horizon=body.horizon,
                                 adoption_speed=body.adoption_speed)
         results["report"] = generate_report(results)
-        ai_response = analyze_with_claude(results)
+        ai_response = analyze_with_local_llm(results, model=body.model)
         return ai_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis error: {str(e)}")
+
+
+@app.get("/api/models")
+def models():
+    """List the LLM models available via the local Ollama service."""
+    return list_available_models()
 
 
 @app.get("/api/compare")

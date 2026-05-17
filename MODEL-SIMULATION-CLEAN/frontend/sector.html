@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sector Analysis — AI Labor Sim</title>
+<meta name="description" content="Detailed per-sector job distribution and automation impact across Tech, Manufacturing, Healthcare, and Services."/>
+<link rel="stylesheet" href="style.css"/>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">⚡ AI Labor Sim</div>
+    <div class="logo-sub">2026 — 2046 · PLUS ULTRA</div>
+  </div>
+  <div class="sidebar-motto">Plus Ultra</div>
+  <div class="nav-section-label">Navigation</div>
+  <a class="nav-link" href="index.html"><span class="nav-icon">🏠</span> Overview</a>
+  <a class="nav-link active" href="sector.html"><span class="nav-icon">🏭</span> Sector Analysis</a>
+  <a class="nav-link" href="ai_impact.html"><span class="nav-icon">🤖</span> AI Impact</a>
+  <a class="nav-link" href="macroeconomy.html"><span class="nav-icon">📈</span> Macroeconomy</a>
+  <a class="nav-link" href="scenarios.html"><span class="nav-icon">🔬</span> Scenario Builder</a>
+  <a class="nav-link" href="validation.html"><span class="nav-icon">✅</span> Validation</a>
+  <div class="sidebar-controls">
+    <div class="ctrl-label">Simulation Controls</div>
+    <div class="ctrl-group">
+      <label>Scenario
+        <select id="select-scenario" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:.75rem">
+          <option value="moderate" selected>Moderate</option>
+          <option value="slow">Slow</option>
+          <option value="rapid">Rapid</option>
+        </select>
+      </label>
+    </div>
+    <div class="ctrl-group">
+      <label>AI Adoption Speed <span id="val-ai">1.0</span></label>
+      <input type="range" id="slider-ai" min="0.5" max="2.0" step="0.1" value="1.0"/>
+    </div>
+    <div class="ctrl-group">
+      <label>Automation Rate <span id="val-automation">5%</span></label>
+      <input type="range" id="slider-automation" min="1" max="12" step="1" value="5"/>
+    </div>
+    <div class="ctrl-group">
+      <label>Horizon <span id="val-horizon">20yr</span></label>
+      <input type="range" id="slider-horizon" min="5" max="30" step="5" value="20"/>
+    </div>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-header">
+    <h1 class="page-title">Sector Analysis</h1>
+    <p class="page-subtitle">Job distribution and automation impact — Tech · Manufacturing · Healthcare · Services</p>
+  </div>
+  <div class="page-body fade-in">
+
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:var(--accent-cyan)">
+        <div class="kpi-label">Total Jobs</div>
+        <div class="kpi-value" id="kpi-jobs">—</div>
+        <div class="kpi-sub">Millions · Final Year</div>
+        <div class="kpi-bg-icon">💼</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-red)">
+        <div class="kpi-label">Unemployment Rate</div>
+        <div class="kpi-value" id="kpi-unem">—</div>
+        <div class="kpi-sub">% of Workforce</div>
+        <div class="kpi-bg-icon">📉</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-gold)">
+        <div class="kpi-label">GDP</div>
+        <div class="kpi-value" id="kpi-gdp">—</div>
+        <div class="kpi-sub">Trillion USD</div>
+        <div class="kpi-bg-icon">💰</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-purple)">
+        <div class="kpi-label">AI Adoption</div>
+        <div class="kpi-value" id="kpi-ai">—</div>
+        <div class="kpi-sub">% Economy-wide</div>
+        <div class="kpi-bg-icon">🤖</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-green)">
+        <div class="kpi-label">Validation Accuracy</div>
+        <div class="kpi-value" id="kpi-accuracy">—</div>
+        <div class="kpi-sub">ML Model</div>
+        <div class="kpi-bg-icon">✅</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="run-btn" onclick="runSector()">▶ Run Sector Analysis</button>
+      <span id="status-text" style="font-size:.78rem;color:var(--text-muted)">Click to load sector data.</span>
+    </div>
+
+    <!-- Sector bar chart — full width -->
+    <div class="chart-grid cols-1" style="margin-bottom:20px">
+      <div class="chart-card full-width">
+        <div class="chart-title">Sector-by-Sector Job Count Over Time</div>
+        <div class="chart-subtitle">Annual job totals per economic sector (millions)</div>
+        <div class="chart-container tall"><div id="chart-sector-lines"></div></div>
+      </div>
+    </div>
+
+    <!-- Bar + Donut row -->
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Final-Year Sector Breakdown</div>
+        <div class="chart-subtitle">Absolute job count by sector in final simulation year</div>
+        <div class="chart-container"><div id="chart-sector-bar"></div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Sector Share Distribution</div>
+        <div class="chart-subtitle">Proportional workforce share — final year</div>
+        <div class="chart-container donut"><div id="chart-sector-donut"></div></div>
+      </div>
+    </div>
+
+    <!-- Automation Risk table -->
+    <div class="chart-card" style="margin-top:20px">
+      <div class="chart-title">Sector Automation Risk Profile (Oxford Martin School)</div>
+      <div class="chart-subtitle">Risk score and projected job displacement by sector</div>
+      <table class="data-table" id="risk-table">
+        <thead>
+          <tr>
+            <th>Sector</th>
+            <th>Oxford Risk Score</th>
+            <th>Jobs at Risk (%)</th>
+            <th>Jobs Created (AI)</th>
+            <th>Net Change</th>
+          </tr>
+        </thead>
+        <tbody id="risk-table-body">
+          <tr><td colspan="5" style="color:var(--text-muted);text-align:center">Run simulation to populate…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Analysing sectors…</div>
+</div>
+<div class="toast-container" id="toast-container"></div>
+
+<script src="app.js"></script>
+<script>
+let cLines, cBar, cDonut;
+const SECTOR_COLORS = ['#00d4ff','#ff4d6a','#00e676','#ffd700'];
+const RISK = { Tech:0.12, Manufacturing:0.85, Healthcare:0.35, Services:0.77 };
+
+async function runSector() {
+  showLoading('Analysing sectors…');
+  try {
+    const data = await apiFetch(
+      `/api/simulate/${window.SIM.scenario}?horizon=${window.SIM.horizon}&adoption_speed=${window.SIM.adoptionSpeed}&country=${window.SIM.country}`
+    );
+    window.SIM.data = data;
+    updateKPIs(data);
+    renderSectorCharts(data);
+    populateRiskTable(data);
+    toast('Sector analysis complete', 'success');
+    document.getElementById('status-text').textContent = `Scenario: ${window.SIM.scenario}`;
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  } finally { hideLoading(); }
+}
+
+function renderSectorCharts(data) {
+  const years = data.years;
+  const sectors = data.sectors;
+  const names = Object.keys(sectors);
+
+  // Multi-line sector trends
+  const series = names.map(n => ({
+    name: n,
+    data: sectors[n].map(v => +(v / 1e6).toFixed(2))
+  }));
+  if (cLines) cLines.destroy();
+  cLines = lineChart('chart-sector-lines', series, years, 'Jobs (Millions)', v => v + 'M');
+
+  // Final-year bar
+  const finalVals = names.map(n => +(sectors[n][sectors[n].length-1]/1e6).toFixed(2));
+  if (cBar) cBar.destroy();
+  cBar = barChart('chart-sector-bar',
+    [{ name: 'Jobs (M)', data: finalVals }], names, '');
+
+  // Donut
+  const rawVals = names.map(n => sectors[n][sectors[n].length-1]);
+  if (cDonut) cDonut.destroy();
+  cDonut = donutChart('chart-sector-donut', rawVals, names, '', SECTOR_COLORS);
+}
+
+function populateRiskTable(data) {
+  const sectors = data.sectors;
+  const tbody = document.getElementById('risk-table-body');
+  const names = Object.keys(sectors);
+  tbody.innerHTML = names.map(n => {
+    const finalJobs = sectors[n][sectors[n].length-1];
+    const risk = RISK[n] || 0.5;
+    const atRisk = (risk * 100).toFixed(0);
+    const created = (finalJobs * 0.15 / 1e6).toFixed(2);
+    const net = ((finalJobs * (1 - risk) + finalJobs * 0.15 - finalJobs) / 1e6).toFixed(2);
+    const netColor = parseFloat(net) >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+    return `<tr>
+      <td><strong>${n}</strong></td>
+      <td><span style="color:${risk>0.6?'var(--accent-red)':risk>0.3?'var(--accent-gold)':'var(--accent-green)'}">${(risk*100).toFixed(0)}%</span></td>
+      <td>${atRisk}%</td>
+      <td>${created}M</td>
+      <td style="color:${netColor}">${net}M</td>
+    </tr>`;
+  }).join('');
+}
+
+window.addEventListener('DOMContentLoaded', runSector);
+</script>
+</body>
+</html>

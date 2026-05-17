@@ -1,0 +1,340 @@
+/* ═══════════════════════════════════════════════════════════════
+   AI Labor Market Simulation — Design System
+   Dark Mode · Bloomberg-inspired · PLUS ULTRA
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── CSS Variables ─────────────────────────────────────────────── */
+:root {
+  --bg-primary:   #070b14;
+  --bg-secondary: #0d1220;
+  --bg-card:      #111827;
+  --bg-card-hover:#162035;
+  --border:       #1e2d45;
+  --border-glow:  #00d4ff33;
+
+  --accent-cyan:  #00d4ff;
+  --accent-gold:  #ffd700;
+  --accent-green: #00e676;
+  --accent-red:   #ff4d6a;
+  --accent-purple:#a855f7;
+  --accent-orange:#ff7c3a;
+
+  --text-primary: #e8f0fe;
+  --text-secondary:#8fa3bf;
+  --text-muted:   #4a6080;
+
+  --sidebar-w:    260px;
+  --header-h:     64px;
+  --radius:       12px;
+  --radius-sm:    8px;
+  --shadow:       0 4px 24px rgba(0,0,0,.5);
+  --shadow-glow:  0 0 24px rgba(0,212,255,.15);
+  --transition:   all .25s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Reset ─────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;border:none;background:none}
+
+/* ── Scrollbar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg-primary)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-cyan)}
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+.app-layout{display:flex;min-height:100vh}
+
+/* ── Sidebar ─────────────────────────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);
+  min-height:100vh;
+  background:var(--bg-secondary);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;z-index:100;
+  transition:var(--transition);
+}
+.sidebar-logo{
+  padding:20px 24px 16px;
+  border-bottom:1px solid var(--border);
+}
+.sidebar-logo .logo-mark{
+  font-size:1.15rem;font-weight:800;letter-spacing:-.5px;
+  background:linear-gradient(135deg,var(--accent-cyan),var(--accent-purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.sidebar-logo .logo-sub{
+  font-size:.68rem;color:var(--text-muted);
+  font-family:'JetBrains Mono',monospace;letter-spacing:.5px;
+  margin-top:2px;
+}
+.sidebar-motto{
+  padding:8px 24px;font-size:.62rem;
+  color:var(--accent-gold);letter-spacing:2px;font-weight:700;
+  text-transform:uppercase;border-bottom:1px solid var(--border);
+}
+.nav-section-label{
+  padding:16px 24px 6px;font-size:.65rem;
+  color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;
+}
+.nav-link{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 24px;font-size:.85rem;font-weight:500;
+  color:var(--text-secondary);border-radius:0;
+  transition:var(--transition);position:relative;
+  border-left:3px solid transparent;
+}
+.nav-link:hover{
+  color:var(--text-primary);
+  background:rgba(0,212,255,.06);
+  border-left-color:var(--accent-cyan);
+}
+.nav-link.active{
+  color:var(--accent-cyan);
+  background:rgba(0,212,255,.10);
+  border-left-color:var(--accent-cyan);
+}
+.nav-link .nav-icon{font-size:1rem;width:20px;text-align:center}
+
+/* ── Sidebar Controls ────────────────────────────────────────────── */
+.sidebar-controls{
+  padding:16px 20px;border-top:1px solid var(--border);
+  margin-top:auto;
+}
+.ctrl-label{
+  font-size:.7rem;color:var(--text-muted);
+  letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px;
+}
+.ctrl-group{margin-bottom:14px}
+.ctrl-group label{
+  display:flex;justify-content:space-between;
+  font-size:.75rem;color:var(--text-secondary);margin-bottom:5px;
+}
+.ctrl-group label span{
+  color:var(--accent-cyan);
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;
+}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:4px;
+  background:var(--border);border-radius:2px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;
+  background:var(--accent-cyan);border-radius:50%;
+  box-shadow:0 0 6px var(--accent-cyan);cursor:pointer;
+  transition:var(--transition);
+}
+input[type=range]::-webkit-slider-thumb:hover{
+  box-shadow:0 0 12px var(--accent-cyan);transform:scale(1.2);
+}
+
+/* ── Main Content ─────────────────────────────────────────────────── */
+.main-content{
+  margin-left:var(--sidebar-w);
+  flex:1;min-height:100vh;
+  background:var(--bg-primary);
+}
+.page-header{
+  padding:28px 32px 0;
+  background:linear-gradient(180deg,rgba(13,18,32,.95) 0%,transparent 100%);
+}
+.page-title{
+  font-size:1.6rem;font-weight:800;
+  background:linear-gradient(135deg,var(--text-primary) 60%,var(--accent-cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.page-subtitle{
+  font-size:.82rem;color:var(--text-muted);margin-top:4px;
+}
+.page-body{padding:24px 32px 40px}
+
+/* ── KPI Cards ─────────────────────────────────────────────────────── */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:14px;margin-bottom:28px;
+}
+@media(max-width:1400px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+
+.kpi-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px 20px;
+  position:relative;overflow:hidden;
+  transition:var(--transition);
+}
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--kpi-color,var(--accent-cyan));
+  opacity:.7;
+}
+.kpi-card:hover{
+  border-color:var(--border-glow);
+  box-shadow:var(--shadow-glow);
+  transform:translateY(-2px);
+}
+.kpi-label{
+  font-size:.68rem;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;
+}
+.kpi-value{
+  font-size:1.65rem;font-weight:800;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--kpi-color,var(--accent-cyan));
+  line-height:1;
+}
+.kpi-sub{
+  font-size:.7rem;color:var(--text-muted);margin-top:5px;
+}
+.kpi-trend{
+  position:absolute;top:16px;right:16px;
+  font-size:.72rem;font-weight:600;padding:2px 7px;
+  border-radius:20px;
+}
+.kpi-trend.up{background:rgba(0,230,118,.12);color:var(--accent-green)}
+.kpi-trend.down{background:rgba(255,77,106,.12);color:var(--accent-red)}
+.kpi-bg-icon{
+  position:absolute;bottom:-8px;right:-8px;
+  font-size:3rem;opacity:.05;
+}
+
+/* ── Chart Cards ─────────────────────────────────────────────────────── */
+.chart-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:20px;margin-bottom:20px;
+}
+.chart-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.chart-grid.cols-1{grid-template-columns:1fr}
+
+.chart-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px 24px;
+  transition:var(--transition);
+}
+.chart-card:hover{border-color:var(--border-glow)}
+.chart-card.full-width{grid-column:1/-1}
+.chart-title{
+  font-size:.9rem;font-weight:700;color:var(--text-primary);
+  margin-bottom:4px;
+}
+.chart-subtitle{
+  font-size:.72rem;color:var(--text-muted);margin-bottom:16px;
+}
+.chart-container{position:relative;width:100%}
+.chart-container canvas{max-height:280px}
+.chart-container.tall canvas{max-height:380px}
+.chart-container.donut canvas{max-height:220px}
+
+/* ── Loading Overlay ─────────────────────────────────────────────────── */
+.loading-overlay{
+  display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(7,11,20,.85);
+  backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;flex-direction:column;gap:16px;
+}
+.loading-overlay.show{display:flex}
+.spinner{
+  width:44px;height:44px;
+  border:3px solid var(--border);
+  border-top-color:var(--accent-cyan);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{
+  font-size:.85rem;color:var(--text-secondary);
+  font-family:'JetBrains Mono',monospace;letter-spacing:1px;
+}
+
+/* ── Toast Notifications ─────────────────────────────────────────────── */
+.toast-container{
+  position:fixed;bottom:24px;right:24px;z-index:300;
+  display:flex;flex-direction:column;gap:8px;
+}
+.toast{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:12px 18px;
+  font-size:.8rem;min-width:240px;
+  animation:slideIn .3s ease;
+  display:flex;align-items:center;gap:10px;
+}
+.toast.success{border-left:3px solid var(--accent-green)}
+.toast.error{border-left:3px solid var(--accent-red)}
+.toast.info{border-left:3px solid var(--accent-cyan)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
+
+/* ── Table ─────────────────────────────────────────────────────────── */
+.data-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.data-table th{
+  padding:10px 14px;text-align:left;
+  color:var(--text-muted);font-weight:600;
+  font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;
+  border-bottom:1px solid var(--border);
+}
+.data-table td{
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  color:var(--text-secondary);
+}
+.data-table tr:hover td{background:rgba(0,212,255,.03)}
+
+/* ── Scenario Badge ─────────────────────────────────────────────────── */
+.badge{
+  display:inline-block;padding:2px 10px;border-radius:20px;
+  font-size:.68rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+}
+.badge-slow{background:rgba(0,230,118,.15);color:var(--accent-green)}
+.badge-moderate{background:rgba(0,212,255,.15);color:var(--accent-cyan)}
+.badge-rapid{background:rgba(255,77,106,.15);color:var(--accent-red)}
+
+/* ── Section Row ─────────────────────────────────────────────────────── */
+.section-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;
+}
+.section-row.thirds{grid-template-columns:1fr 1fr 1fr}
+
+/* ── Arabic Report Panel ─────────────────────────────────────────────── */
+.arabic-report{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:28px 32px;
+  direction:rtl;text-align:right;
+  font-family:'Noto Sans Arabic','Segoe UI',sans-serif;
+  line-height:2;color:var(--text-primary);
+  white-space:pre-wrap;font-size:.88rem;
+  max-height:600px;overflow-y:auto;
+}
+
+/* ── Animate entrance ─────────────────────────────────────────────────── */
+.fade-in{animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ── Run Button ─────────────────────────────────────────────────────── */
+.run-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 22px;border-radius:var(--radius-sm);
+  font-size:.82rem;font-weight:700;letter-spacing:.5px;
+  background:linear-gradient(135deg,var(--accent-cyan),#0099bb);
+  color:#000;transition:var(--transition);
+}
+.run-btn:hover{
+  box-shadow:0 0 20px rgba(0,212,255,.4);
+  transform:translateY(-1px);
+}
+.btn-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}

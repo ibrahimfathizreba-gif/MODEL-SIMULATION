@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Labor Market Simulation — Overview</title>
+<meta name="description" content="Enterprise-grade AI Labor Market Impact Simulation 2026-2046. Real-time dashboard showing unemployment, GDP, sector analysis, and AI adoption trends."/>
+<link rel="stylesheet" href="style.css"/>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+
+<!-- ── Sidebar ─────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">⚡ AI Labor Sim</div>
+    <div class="logo-sub">2026 — 2046 · PLUS ULTRA</div>
+  </div>
+  <div class="sidebar-motto">Plus Ultra</div>
+
+  <div class="nav-section-label">Navigation</div>
+  <a class="nav-link active" href="index.html"><span class="nav-icon">🏠</span> Overview</a>
+  <a class="nav-link" href="sector.html"><span class="nav-icon">🏭</span> Sector Analysis</a>
+  <a class="nav-link" href="ai_impact.html"><span class="nav-icon">🤖</span> AI Impact</a>
+  <a class="nav-link" href="macroeconomy.html"><span class="nav-icon">📈</span> Macroeconomy</a>
+  <a class="nav-link" href="scenarios.html"><span class="nav-icon">🔬</span> Scenario Builder</a>
+  <a class="nav-link" href="validation.html"><span class="nav-icon">✅</span> Validation</a>
+
+  <div class="sidebar-controls">
+    <div class="ctrl-label">Simulation Controls</div>
+
+    <div class="ctrl-group">
+      <label>Scenario
+        <select id="select-scenario" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:.75rem">
+          <option value="moderate" selected>Moderate</option>
+          <option value="slow">Slow</option>
+          <option value="rapid">Rapid</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="ctrl-group">
+      <label>AI Adoption Speed <span id="val-ai">1.0</span></label>
+      <input type="range" id="slider-ai" min="0.5" max="2.0" step="0.1" value="1.0"/>
+    </div>
+    <div class="ctrl-group">
+      <label>Automation Rate <span id="val-automation">5%</span></label>
+      <input type="range" id="slider-automation" min="1" max="12" step="1" value="5"/>
+    </div>
+    <div class="ctrl-group">
+      <label>Horizon <span id="val-horizon">20yr</span></label>
+      <input type="range" id="slider-horizon" min="5" max="30" step="5" value="20"/>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main ────────────────────────────────────────────────── -->
+<main class="main-content">
+  <div class="page-header">
+    <h1 class="page-title">Overview Dashboard</h1>
+    <p class="page-subtitle">What happened? What is happening now? What will happen next?</p>
+  </div>
+  <div class="page-body fade-in">
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:var(--accent-cyan)">
+        <div class="kpi-label">Total Jobs</div>
+        <div class="kpi-value" id="kpi-jobs">—</div>
+        <div class="kpi-sub">Millions · Final Year</div>
+        <div class="kpi-bg-icon">💼</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-red)">
+        <div class="kpi-label">Unemployment Rate</div>
+        <div class="kpi-value" id="kpi-unem">—</div>
+        <div class="kpi-sub">% of Workforce</div>
+        <div class="kpi-bg-icon">📉</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-gold)">
+        <div class="kpi-label">GDP</div>
+        <div class="kpi-value" id="kpi-gdp">—</div>
+        <div class="kpi-sub">Trillion USD · Final Year</div>
+        <div class="kpi-bg-icon">💰</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-purple)">
+        <div class="kpi-label">AI Adoption</div>
+        <div class="kpi-value" id="kpi-ai">—</div>
+        <div class="kpi-sub">% Economy-wide</div>
+        <div class="kpi-bg-icon">🤖</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:var(--accent-green)">
+        <div class="kpi-label">Validation Accuracy</div>
+        <div class="kpi-value" id="kpi-accuracy">—</div>
+        <div class="kpi-sub">ML Model · Backtest</div>
+        <div class="kpi-bg-icon">✅</div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-row">
+      <button class="run-btn" onclick="runSimulation()">▶ Run Simulation</button>
+      <span id="status-text" style="font-size:.78rem;color:var(--text-muted)">Select scenario and click Run.</span>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Unemployment Rate Over Time</div>
+        <div class="chart-subtitle">Annual % of total workforce displaced by AI automation</div>
+        <div class="chart-container"><div id="chart-unemployment"></div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">GDP Trajectory</div>
+        <div class="chart-subtitle">Gross Domestic Product (Trillion USD) driven by AI productivity</div>
+        <div class="chart-container"><div id="chart-gdp"></div></div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Workforce by Skill Level</div>
+        <div class="chart-subtitle">Distribution across 5 skill tiers (final year)</div>
+        <div class="chart-container donut"><div id="chart-skills-donut"></div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Jobs by Economic Sector</div>
+        <div class="chart-subtitle">Tech · Manufacturing · Healthcare · Services (final year)</div>
+        <div class="chart-container donut"><div id="chart-sector-donut"></div></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Running simulation…</div>
+</div>
+<div class="toast-container" id="toast-container"></div>
+
+<script src="app.js"></script>
+<script>
+let chartUnem, chartGDP, chartSkills, chartSector;
+
+async function runSimulation() {
+  showLoading('Running simulation…');
+  document.getElementById('status-text').textContent = 'Fetching data…';
+  try {
+    const scenario = window.SIM.scenario;
+    const horizon  = window.SIM.horizon;
+    const speed    = window.SIM.adoptionSpeed;
+    const data = await apiFetch(`/api/simulate/${scenario}?horizon=${horizon}&adoption_speed=${speed}&country=${window.SIM.country}`);
+    window.SIM.data = data;
+
+    updateKPIs(data);
+    renderCharts(data);
+    toast(`Simulation complete — ${scenario.toUpperCase()} scenario`, 'success');
+    document.getElementById('status-text').textContent =
+      `Last run: ${scenario} | Horizon: ${horizon}yr | Speed: ${speed}x`;
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+    document.getElementById('status-text').textContent = 'Error — see console';
+    console.error(e);
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderCharts(data) {
+  const years = data.years;
+
+  if (chartUnem) chartUnem.destroy();
+  chartUnem = lineChart('chart-unemployment',
+    [{ name: 'Unemployment %', data: data.unemployment }],
+    years, '', (v) => v + '%');
+
+  if (chartGDP) chartGDP.destroy();
+  chartGDP = lineChart('chart-gdp',
+    [{ name: 'GDP (T$)', data: data.gdp }],
+    years, '', (v) => '$' + v + 'T');
+
+  // Skill donut — final year
+  const skillNames = Object.keys(data.skills);
+  const skillVals  = skillNames.map(k => data.skills[k][data.skills[k].length - 1]);
+  if (chartSkills) chartSkills.destroy();
+  chartSkills = donutChart('chart-skills-donut', skillVals, skillNames, '',
+    ['#00d4ff','#ffd700','#00e676','#a855f7','#ff7c3a']);
+
+  // Sector donut — final year
+  const secNames = Object.keys(data.sectors);
+  const secVals  = secNames.map(k => data.sectors[k][data.sectors[k].length - 1]);
+  if (chartSector) chartSector.destroy();
+  chartSector = donutChart('chart-sector-donut', secVals, secNames, '',
+    ['#00d4ff','#ff4d6a','#00e676','#ffd700']);
+}
+
+// Auto-load on page open
+window.addEventListener('DOMContentLoaded', runSimulation);
+</script>
+</body>
+</html>
