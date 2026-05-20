@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>simulation.py — Function & Data Flow Diagrams</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a2027;
+    --panel-2: #232a32;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-2: #7ee787;
+    --warn: #f0883e;
+    --border: #30363d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+  }
+  header {
+    background: linear-gradient(135deg, #1a2027 0%, #2d3748 100%);
+    padding: 2.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    max-width: 800px;
+  }
+  nav {
+    background: var(--panel);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+  }
+  nav a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  nav a:hover { text-decoration: underline; }
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  section h2 {
+    margin-top: 0;
+    color: var(--accent);
+    font-size: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+  }
+  section h3 {
+    color: var(--accent-2);
+    margin-top: 1.5rem;
+  }
+  .description {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+  .mermaid {
+    background: var(--panel-2);
+    border-radius: 6px;
+    padding: 1.5rem;
+    overflow-x: auto;
+    text-align: center;
+  }
+  code {
+    background: var(--panel-2);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 0.9em;
+    color: var(--warn);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+  th, td {
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--panel-2);
+    color: var(--accent-2);
+    font-weight: 600;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--panel-2);
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .swatch {
+    display: inline-block;
+    width: 18px;
+    height: 12px;
+    border-radius: 2px;
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    padding: 2rem;
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>simulation.py — Function &amp; Data Flow Diagrams</h1>
+  <p>
+    Visual companion to <code>SIMULATION_EXPLAINED.md</code> and <code>KEYWORDS_GLOSSARY.md</code>.
+    Each diagram shows a different slice: file architecture, function call graphs, data flow through the simulation loop,
+    World Bank API fetching, state mutation, and frontend ↔ backend wiring.
+  </p>
+</header>
+
+<nav>
+  <ol>
+    <li><a href="#section-1">1. Project File Architecture</a></li>
+    <li><a href="#section-2">2. Backend Module Imports</a></li>
+    <li><a href="#section-3">3. Frontend ↔ API ↔ Simulation</a></li>
+    <li><a href="#section-4">4. simulation.py Call Graph</a></li>
+    <li><a href="#section-5">5. run_scenario Sequence (Per Year)</a></li>
+    <li><a href="#section-6">6. World Bank Data Fetching Flow</a></li>
+    <li><a href="#section-7">7. State Dict Mutation</a></li>
+    <li><a href="#section-8">8. Scenario Variants</a></li>
+    <li><a href="#section-9">9. Data Type Flow</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ─────────────────────────────────────────── -->
+<section id="section-1">
+  <h2>1. Project File Architecture</h2>
+  <p class="description">
+    The whole project at a glance. The frontend (HTML pages + one shared JS file) calls into a FastAPI backend.
+    The backend has 4 Python modules. <code>simulation.py</code> is the engine; everything else is HTTP plumbing, AI commentary, or forecasting.
+  </p>
+  <div class="mermaid">
+flowchart TB
+    subgraph Frontend["🌐 Frontend (Browser)"]
+        IDX[index.html]
+        MAC[macroeconomy.html]
+        SEC[sector.html]
+        SCN[scenarios.html]
+        AI[ai_impact.html]
+        VAL[validation.html]
+        JS[app.js<br/>shared fetch helpers]
+        CSS[style.css]
+    end
+
+    subgraph Backend["🐍 Backend (FastAPI)"]
+        APP[app.py<br/>HTTP routes]
+        SIM[simulation.py<br/>core engine]
+        FOR[forecast.py<br/>ML forecasting]
+        LLM[llm.py<br/>AI commentary]
+        DATA[(data/<br/>CSV / cached files)]
+    end
+
+    subgraph External["☁️ External Services"]
+        WB[World Bank API<br/>data.worldbank.org]
+        OLLAMA[Ollama Local LLM<br/>localhost:11434]
+    end
+
+    IDX & MAC & SEC & SCN & AI & VAL -.use.-> JS
+    IDX & MAC & SEC & SCN & AI & VAL -.styles.-> CSS
+    JS ==HTTP fetch==> APP
+
+    APP --imports--> SIM
+    APP --imports--> FOR
+    APP --imports--> LLM
+    APP --reads--> DATA
+
+    SIM ==HTTPS GET==> WB
+    LLM ==HTTP POST==> OLLAMA
+
+    style SIM fill:#1f6feb,color:#fff,stroke:#58a6ff,stroke-width:3px
+    style APP fill:#238636,color:#fff
+    style WB fill:#8957e5,color:#fff
+    style OLLAMA fill:#8957e5,color:#fff
+  </div>
+  <div class="legend">
+    <div class="legend-item"><span class="swatch" style="background:#1f6feb"></span> Core engine (the focus)</div>
+    <div class="legend-item"><span class="swatch" style="background:#238636"></span> HTTP layer</div>
+    <div class="legend-item"><span class="swatch" style="background:#8957e5"></span> External service</div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section id="section-2">
+  <h2>2. Backend Module Imports</h2>
+  <p class="description">
+    What each Python file imports from the others. <code>app.py</code> is the entry point — it imports from
+    <code>simulation</code>, <code>forecast</code>, and <code>llm</code>. The engine modules don't import each other (clean separation).
+  </p>
+  <div class="mermaid">
+flowchart LR
+    APP["app.py<br/>━━━━━━━<br/>FastAPI app<br/>14 endpoints"]
+
+    SIM["simulation.py<br/>━━━━━━━<br/>20 functions<br/>481 lines"]
+    FOR["forecast.py<br/>━━━━━━━<br/>ML forecast"]
+    LLM["llm.py<br/>━━━━━━━<br/>Ollama wrapper"]
+
+    APP -- "compare_scenarios<br/>export_csv<br/>get_country_baseline<br/>monte_carlo<br/>run_scenario<br/>sensitivity<br/>validate" --> SIM
+    APP -- "forecast_unemployment" --> FOR
+    APP -- "analyze_with_local_llm<br/>list_available_models" --> LLM
+
+    SIM -. "numpy, pandas,<br/>requests" .-> EXT[("Third-party<br/>libraries")]
+
+    style SIM fill:#1f6feb,color:#fff,stroke:#58a6ff,stroke-width:3px
+    style APP fill:#238636,color:#fff
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section id="section-3">
+  <h2>3. Frontend Page → API Endpoint → simulation.py</h2>
+  <p class="description">
+    Every frontend page hits one or more <code>/api/...</code> endpoints, which call into <code>simulation.py</code>.
+    This is the full request path for a user interaction.
+  </p>
+  <div class="mermaid">
+flowchart LR
+    subgraph Pages["Frontend pages"]
+        P1[index.html<br/>overview]
+        P2[macroeconomy.html<br/>GDP/unem charts]
+        P3[sector.html<br/>per-sector view]
+        P4[scenarios.html<br/>3-way compare]
+        P5[ai_impact.html<br/>Oxford risk]
+        P6[validation.html<br/>backtest]
+    end
+
+    subgraph Endpoints["API endpoints (app.py)"]
+        E1["/api/simulate/{scenario}"]
+        E2["/api/compare"]
+        E3["/api/baseline"]
+        E4["/api/countries"]
+        E5["/api/monte-carlo"]
+        E6["/api/sensitivity"]
+        E7["/api/validate"]
+        E8["/api/oxford-risk"]
+        E9["/api/oxford-full"]
+        E10["/api/analyze (LLM)"]
+        E11["/api/models (LLM)"]
+    end
+
+    subgraph SimFns["simulation.py functions"]
+        F1[run_scenario]
+        F2[compare_scenarios]
+        F3[get_country_baseline]
+        F4[monte_carlo]
+        F5[sensitivity]
+        F6[validate]
+    end
+
+    P1 --> E3
+    P1 --> E1
+    P2 --> E1
+    P2 --> E5
+    P3 --> E1
+    P4 --> E2
+    P5 --> E8
+    P5 --> E9
+    P5 --> E10
+    P6 --> E7
+
+    Pages -.dropdown.-> E4
+
+    E1 --> F1
+    E2 --> F2
+    E3 --> F3
+    E5 --> F4
+    E6 --> F5
+    E7 --> F6
+    E10 -. "uses results from" .-> F1
+
+    style F1 fill:#1f6feb,color:#fff
+    style F2 fill:#1f6feb,color:#fff
+    style F3 fill:#1f6feb,color:#fff
+    style F4 fill:#1f6feb,color:#fff
+    style F5 fill:#1f6feb,color:#fff
+    style F6 fill:#1f6feb,color:#fff
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section id="section-4">
+  <h2>4. simulation.py — Internal Function Call Graph</h2>
+  <p class="description">
+    Which function calls which inside <code>simulation.py</code> itself. The 4 public entry points
+    (<code>run_scenario</code>, <code>monte_carlo</code>, <code>sensitivity</code>, <code>validate</code>) all flow
+    down to the same core helpers: <code>step_year</code>, <code>ai_adoption</code>, and the World Bank fetchers.
+  </p>
+  <div class="mermaid">
+flowchart TD
+    subgraph Entry["🚀 Public entry points"]
+        RS[run_scenario]
+        CS[compare_scenarios]
+        MC[monte_carlo]
+        SN[sensitivity]
+        VL[validate]
+    end
+
+    subgraph Core["⚙️ Core math"]
+        IS[initial_state]
+        SY[step_year]
+        AA[ai_adoption]
+    end
+
+    subgraph Breakdowns["📊 Per-year breakdowns"]
+        SKB[skill_breakdown]
+        SCB[sector_breakdown]
+        WS[wages_by_skill]
+        GI[gini_index]
+    end
+
+    subgraph Output["📤 Output formatters"]
+        SUM[summarize]
+        REP[report]
+        ECSV[export_csv]
+    end
+
+    subgraph WBData["🌍 World Bank data"]
+        GCB[get_country_baseline]
+        FWB[fetch_world_bank_baseline]
+        FWS[fetch_world_bank_sectors]
+        FWU[fetch_world_bank_unemployment]
+        WBL[_wb_latest]
+        CACHE[("_BASELINE_CACHE")]
+    end
+
+    CS --> RS
+    SN --> RS
+
+    RS --> IS
+    RS --> SY
+    RS --> SKB
+    RS --> SCB
+    RS --> WS
+    RS --> GI
+    RS --> SUM
+    RS --> REP
+
+    MC --> IS
+    MC --> SY
+
+    VL --> FWU
+    VL --> AA
+
+    SY --> AA
+    IS --> GCB
+    SCB --> GCB
+
+    GCB --> FWB
+    GCB --> FWS
+    GCB <--> CACHE
+
+    FWB --> WBL
+    FWS --> WBL
+
+    style RS fill:#1f6feb,color:#fff,stroke:#58a6ff,stroke-width:3px
+    style SY fill:#1f6feb,color:#fff,stroke:#58a6ff,stroke-width:3px
+    style AA fill:#1f6feb,color:#fff,stroke:#58a6ff,stroke-width:3px
+    style CACHE fill:#6e7681,color:#fff
+  </div>
+
+  <h3>Function-by-function call summary</h3>
+  <table>
+    <thead><tr><th>Function</th><th>Calls</th><th>Called by</th></tr></thead>
+    <tbody>
+      <tr><td><code>_wb_latest</code></td><td>—</td><td><code>fetch_world_bank_baseline</code>, <code>fetch_world_bank_sectors</code></td></tr>
+      <tr><td><code>fetch_world_bank_baseline</code></td><td><code>_wb_latest</code> ×4</td><td><code>get_country_baseline</code></td></tr>
+      <tr><td><code>fetch_world_bank_sectors</code></td><td><code>_wb_latest</code> ×3</td><td><code>get_country_baseline</code></td></tr>
+      <tr><td><code>get_country_baseline</code></td><td>both fetchers</td><td><code>initial_state</code>, <code>sector_breakdown</code></td></tr>
+      <tr><td><code>ai_adoption</code></td><td>—</td><td><code>step_year</code>, <code>validate</code></td></tr>
+      <tr><td><code>initial_state</code></td><td><code>get_country_baseline</code></td><td><code>run_scenario</code>, <code>monte_carlo</code></td></tr>
+      <tr><td><code>step_year</code></td><td><code>ai_adoption</code></td><td><code>run_scenario</code>, <code>monte_carlo</code></td></tr>
+      <tr><td><code>skill_breakdown</code></td><td>—</td><td><code>run_scenario</code></td></tr>
+      <tr><td><code>wages_by_skill</code></td><td>—</td><td><code>run_scenario</code></td></tr>
+      <tr><td><code>sector_breakdown</code></td><td><code>get_country_baseline</code></td><td><code>run_scenario</code></td></tr>
+      <tr><td><code>gini_index</code></td><td>—</td><td><code>run_scenario</code></td></tr>
+      <tr><td><code>run_scenario</code></td><td>nearly everything</td><td><code>compare_scenarios</code>, <code>sensitivity</code>, API</td></tr>
+      <tr><td><code>compare_scenarios</code></td><td><code>run_scenario</code> ×3</td><td>API</td></tr>
+      <tr><td><code>monte_carlo</code></td><td><code>initial_state</code>, <code>step_year</code></td><td>API</td></tr>
+      <tr><td><code>sensitivity</code></td><td><code>run_scenario</code> ×5</td><td>API</td></tr>
+      <tr><td><code>fetch_world_bank_unemployment</code></td><td>—</td><td><code>validate</code></td></tr>
+      <tr><td><code>validate</code></td><td>WB unem fetch, <code>ai_adoption</code></td><td>API</td></tr>
+      <tr><td><code>summarize</code> / <code>report</code></td><td>—</td><td><code>run_scenario</code></td></tr>
+      <tr><td><code>export_csv</code></td><td>—</td><td>API (CSV endpoint)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section id="section-5">
+  <h2>5. <code>run_scenario</code> — What Happens Each Year</h2>
+  <p class="description">
+    The yearly loop. <code>run_scenario</code> calls 6 functions in sequence for each of 20 years (or however long
+    <code>horizon</code> is set to). This sequence diagram shows the order of calls and what data each one produces.
+  </p>
+  <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as User / API
+    participant RS as run_scenario
+    participant IS as initial_state
+    participant Loop as Year Loop (i=0..19)
+    participant SY as step_year
+    participant SKB as skill_breakdown
+    participant SCB as sector_breakdown
+    participant WS as wages_by_skill
+    participant GI as gini_index
+    participant SUM as summarize + report
+
+    U->>RS: run_scenario("moderate", 20, country="USA")
+    RS->>IS: build initial state
+    IS-->>RS: {total_jobs, workforce, ai_adoption, _gdp_base}
+
+    loop For each year i in 0..19
+        RS->>SY: step_year(state, i, auto_rate, speed)
+        Note over SY: Updates state in place:<br/>state["ai_adoption"] = logistic(i)<br/>state["total_jobs"] -= lost + created<br/>state["workforce"] *= 1.008
+        SY-->>RS: {unem, productivity, gdp, spending}
+
+        RS->>SKB: skill_breakdown(state)
+        SKB-->>RS: {L1: 720M, L2: 1080M, ..., L5: 360M}
+
+        RS->>SCB: sector_breakdown(state, auto_rate)
+        SCB-->>RS: {Tech: 340M, Mfg: 750M, Health: 440M, Svc: 1.8B}
+
+        RS->>WS: wages_by_skill(state["ai_adoption"])
+        WS-->>RS: {L1: $28K, L2: $45K, ..., L5: $244K}
+
+        RS->>GI: gini_index(wages, skills)
+        GI-->>RS: 0.42
+
+        Note over RS: append all values<br/>to results dict
+    end
+
+    RS->>SUM: summarize(results), report(results)
+    SUM-->>RS: stats + summary
+
+    RS-->>U: JSON with 20 years of data
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section id="section-6">
+  <h2>6. World Bank Data Fetching Flow</h2>
+  <p class="description">
+    When you ask for a country's baseline, the model fetches up to 7 World Bank indicators (4 for the baseline,
+    3 for sectors). The first call triggers HTTPS requests; subsequent calls return from the in-memory cache.
+  </p>
+  <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Caller as initial_state / sector_breakdown
+    participant GCB as get_country_baseline
+    participant Cache as _BASELINE_CACHE (dict)
+    participant FWB as fetch_world_bank_baseline
+    participant FWS as fetch_world_bank_sectors
+    participant WBL as _wb_latest
+    participant WB as data.worldbank.org
+
+    Caller->>GCB: get_country_baseline("USA")
+
+    alt First time for "USA"
+        GCB->>Cache: cache["USA"]?
+        Cache-->>GCB: not found
+        GCB->>FWB: fetch_world_bank_baseline("USA")
+
+        FWB->>WBL: _wb_latest("SL.EMP.TOTL", "USA")
+        WBL->>WB: GET /v2/country/USA/indicator/SL.EMP.TOTL
+        WB-->>WBL: JSON (returns null — only WLD has this)
+        WBL-->>FWB: None
+
+        FWB->>WBL: _wb_latest("SL.TLF.TOTL.IN", "USA")
+        WBL->>WB: GET .../SL.TLF.TOTL.IN
+        WB-->>WBL: 167_000_000 (labor force)
+        WBL-->>FWB: 167_000_000
+
+        FWB->>WBL: _wb_latest("NY.GDP.MKTP.CD", "USA")
+        WBL->>WB: GET .../NY.GDP.MKTP.CD
+        WB-->>WBL: 27_360_000_000_000 ($27.36T)
+        WBL-->>FWB: 27_360_000_000_000
+
+        FWB->>WBL: _wb_latest("SL.UEM.TOTL.ZS", "USA")
+        WBL->>WB: GET .../SL.UEM.TOTL.ZS
+        WB-->>WBL: 3.6 (unemployment %)
+        WBL-->>FWB: 3.6
+
+        Note over FWB: employment = 167M × (1 − 3.6/100)<br/>= 161M (derived)
+        FWB-->>GCB: {employment, labor_force, gdp_trillion, live: true}
+
+        GCB->>FWS: fetch_world_bank_sectors("USA")
+        FWS->>WBL: SL.AGR.EMPL.ZS
+        FWS->>WBL: SL.IND.EMPL.ZS
+        FWS->>WBL: SL.SRV.EMPL.ZS
+        Note over FWS: agri=1.4%, ind=19.4%, srv=79.2%<br/>→ map to {Tech:14.5%, Mfg:19.4%,<br/>Health:19.3%, Svc:46.8%}
+        FWS-->>GCB: sector shares dict
+
+        GCB->>Cache: cache["USA"] = base
+    else Already cached
+        GCB->>Cache: cache["USA"]?
+        Cache-->>GCB: ✓ found
+    end
+
+    GCB-->>Caller: baseline dict (employment, labor_force, gdp, sectors)
+  </div>
+
+  <h3>The 7 World Bank indicator codes used</h3>
+  <table>
+    <thead><tr><th>Code</th><th>Decoded</th><th>What it returns</th></tr></thead>
+    <tbody>
+      <tr><td><code>SL.EMP.TOTL</code></td><td>Social.Labor / Employment / Total</td><td>Total employed people (WLD only)</td></tr>
+      <tr><td><code>SL.TLF.TOTL.IN</code></td><td>... / Total Labor Force / Total / In persons</td><td>Total labor force</td></tr>
+      <tr><td><code>SL.UEM.TOTL.ZS</code></td><td>... / Unemployment / Total / % Share</td><td>Unemployment rate (%)</td></tr>
+      <tr><td><code>NY.GDP.MKTP.CD</code></td><td>National accts / GDP / Market price / Current $</td><td>GDP in raw USD</td></tr>
+      <tr><td><code>SL.AGR.EMPL.ZS</code></td><td>... / Agriculture / Employment in / % Share</td><td>% of jobs in agriculture</td></tr>
+      <tr><td><code>SL.IND.EMPL.ZS</code></td><td>... / Industry / Employment in / % Share</td><td>% of jobs in industry</td></tr>
+      <tr><td><code>SL.SRV.EMPL.ZS</code></td><td>... / Services / Employment in / % Share</td><td>% of jobs in services</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section id="section-7">
+  <h2>7. <code>state</code> Dict — What Lives In It and Who Mutates It</h2>
+  <p class="description">
+    The simulation passes one mutable dict — <code>state</code> — through every year. It contains 5 keys.
+    This diagram shows which function reads which, and which function writes which.
+  </p>
+  <div class="mermaid">
+flowchart LR
+    subgraph StateDict["state dict (mutated in place)"]
+        TJ["total_jobs<br/>count of people"]
+        WF["workforce<br/>count of people"]
+        AAJ["ai_adoption<br/>fraction 0..1"]
+        GB["_gdp_base<br/>trillion USD"]
+        C["_country<br/>WB country code"]
+    end
+
+    IS[initial_state] ==initializes==> TJ
+    IS ==initializes==> WF
+    IS ==initializes==> AAJ
+    IS ==initializes==> GB
+    IS ==initializes==> C
+
+    SY[step_year] -."reads<br/>+ writes".-> TJ
+    SY -."reads<br/>+ writes".-> WF
+    SY ==writes==> AAJ
+    SY -.reads.-> GB
+
+    SKB[skill_breakdown] -.reads.-> WF
+    SCB[sector_breakdown] -.reads.-> TJ
+    SCB -.reads.-> AAJ
+    SCB -.reads.-> C
+    WS[wages_by_skill] -.reads.-> AAJ
+
+    style TJ fill:#1f6feb,color:#fff
+    style WF fill:#1f6feb,color:#fff
+    style AAJ fill:#1f6feb,color:#fff
+    style GB fill:#6e7681,color:#fff
+    style C fill:#6e7681,color:#fff
+  </div>
+  <div class="legend">
+    <div class="legend-item"><span class="swatch" style="background:#1f6feb"></span> Public state (changes each year)</div>
+    <div class="legend-item"><span class="swatch" style="background:#6e7681"></span> Private state (set once, leading underscore)</div>
+    <div class="legend-item"><span style="font-size: 1.2rem">━━</span> Solid arrow = writes/initializes</div>
+    <div class="legend-item"><span style="font-size: 1.2rem">┄┄</span> Dashed arrow = reads</div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section id="section-8">
+  <h2>8. Scenario Variants — How <code>compare</code>, <code>monte_carlo</code>, <code>sensitivity</code> Differ</h2>
+  <p class="description">
+    Three different ways to use the same engine. <code>compare_scenarios</code> runs 3 fixed scenarios.
+    <code>monte_carlo</code> runs N random variations. <code>sensitivity</code> perturbs each parameter by ±20%.
+  </p>
+  <div class="mermaid">
+flowchart TD
+    subgraph A["compare_scenarios"]
+        A1["Run 3 scenarios:<br/>slow / moderate / rapid"]
+        A2[run_scenario - slow]
+        A3[run_scenario - moderate]
+        A4[run_scenario - rapid]
+        A5[Return 3 result sets]
+        A1 --> A2 & A3 & A4 --> A5
+    end
+
+    subgraph B["monte_carlo - 1000 random runs"]
+        B1["Pick random auto_rate<br/>0.02..0.10"]
+        B2["Pick random speed<br/>0.60..1.50"]
+        B3["Perturb initial state<br/>±5%"]
+        B4["Run 20-year simulation<br/>step_year × 20"]
+        B5["Record unem and gdp<br/>in 2D array"]
+        B6["Compute mean,<br/>2.5%, 97.5%<br/>percentiles"]
+        B1 --> B2 --> B3 --> B4 --> B5
+        B5 -- "loop 1000×" --> B1
+        B5 --> B6
+    end
+
+    subgraph C["sensitivity - ±20% perturbation"]
+        C1[Baseline: run_scenario]
+        C2["Vary auto_rate +20%"]
+        C3["Vary auto_rate −20%"]
+        C4["Vary speed +20%"]
+        C5["Vary speed −20%"]
+        C6["Report impact on<br/>final-year unemployment"]
+        C1 --> C2 & C3 & C4 & C5 --> C6
+    end
+
+    style A1 fill:#238636,color:#fff
+    style B1 fill:#8957e5,color:#fff
+    style C1 fill:#f0883e,color:#fff
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section id="section-9">
+  <h2>9. Data Type Flow — From World Bank Bytes to Browser Chart</h2>
+  <p class="description">
+    End-to-end type transformations. The user's click triggers a chain of conversions:
+    raw HTTP bytes → JSON dict → numpy arrays → Python dicts → JSON response → JavaScript chart.
+  </p>
+  <div class="mermaid">
+flowchart LR
+    A["User clicks<br/>'Run Simulation'"]
+    B["JS: fetch '/api/simulate/moderate?country=USA'"]
+    C["FastAPI route<br/>(app.py)"]
+    D["run_scenario(<br/>'moderate', 20,<br/>country='USA')"]
+    E["initial_state →<br/>get_country_baseline"]
+    F["HTTPS GET<br/>data.worldbank.org"]
+    G["JSON response<br/>(bytes)"]
+    H["Python dict<br/>{employment, gdp...}"]
+    I["state dict<br/>(year 0)"]
+    J["20× step_year +<br/>breakdowns"]
+    K["results dict<br/>(years, gdp[], etc)"]
+    L["JSON serialize"]
+    M["Response body<br/>(bytes)"]
+    N["JS: response.json()"]
+    O["Chart.js renders<br/>line chart"]
+
+    A --> B --> C --> D --> E --> F --> G --> H --> I --> J --> K --> L --> M --> N --> O
+
+    style A fill:#238636,color:#fff
+    style F fill:#8957e5,color:#fff
+    style J fill:#1f6feb,color:#fff,stroke:#58a6ff,stroke-width:3px
+    style O fill:#238636,color:#fff
+  </div>
+
+  <h3>Type at each step</h3>
+  <table>
+    <thead><tr><th>Step</th><th>Type</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>User click</td><td>DOM event</td><td>(JS click handler)</td></tr>
+      <tr><td>fetch URL</td><td>string</td><td><code>/api/simulate/moderate?country=USA</code></td></tr>
+      <tr><td>Path params</td><td>str, int</td><td><code>scenario="moderate", horizon=20</code></td></tr>
+      <tr><td>WB API URL</td><td>string</td><td><code>https://api.worldbank.org/.../SL.EMP.TOTL</code></td></tr>
+      <tr><td>WB response</td><td>bytes (JSON)</td><td><code>b'[{"page":1,...},[{...}]]'</code></td></tr>
+      <tr><td>Parsed JSON</td><td>Python list/dict</td><td><code>[{"page":1}, [{"value": 167000000}]]</code></td></tr>
+      <tr><td>Baseline dict</td><td>Dict[str, Any]</td><td><code>{"employment": 161e6, ...}</code></td></tr>
+      <tr><td>state</td><td>Dict[str, float]</td><td><code>{"total_jobs": 161e6, ...}</code></td></tr>
+      <tr><td>step_year output</td><td>Dict[str, float]</td><td><code>{"unem": 0.06, "gdp": 28.5, ...}</code></td></tr>
+      <tr><td>Yearly arrays</td><td>List[float]</td><td><code>[0.06, 0.058, 0.071, ...]</code></td></tr>
+      <tr><td>results</td><td>Dict[str, Any]</td><td><code>{"years":[...], "gdp":[...], ...}</code></td></tr>
+      <tr><td>JSON response</td><td>bytes</td><td><code>b'{"years":[2026,...]}'</code></td></tr>
+      <tr><td>JS object</td><td>JavaScript object</td><td><code>{years: [...], gdp: [...]}</code></td></tr>
+      <tr><td>Chart.js dataset</td><td>JS array</td><td>rendered as SVG line</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+
+<footer>
+  Generated as a companion to <code>simulation.py</code> · See <code>SIMULATION_EXPLAINED.md</code> and <code>KEYWORDS_GLOSSARY.md</code> for prose walkthroughs.
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#232a32',
+      primaryColor: '#1f6feb',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#58a6ff',
+      lineColor: '#8b949e',
+      secondaryColor: '#232a32',
+      tertiaryColor: '#1a2027',
+      mainBkg: '#1f6feb',
+      secondBkg: '#238636',
+      tertiaryBkg: '#8957e5'
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 80, messageMargin: 40 }
+  });
+</script>
+
+</body>
+</html>

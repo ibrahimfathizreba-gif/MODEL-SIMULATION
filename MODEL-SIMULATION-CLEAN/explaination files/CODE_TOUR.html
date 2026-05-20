@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>simulation.py — Interactive Code Tour</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c2128;
+    --panel-3: #21262d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-2: #7ee787;
+    --warn: #f0883e;
+    --danger: #f85149;
+    --border: #30363d;
+    --shadow: 0 4px 14px rgba(0,0,0,.4);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+  }
+  header {
+    background: linear-gradient(135deg, #161b22 0%, #2d3748 100%);
+    padding: 2.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { margin: 0 0 0.5rem 0; font-size: 2rem; }
+  header p { margin: 0; color: var(--muted); max-width: 900px; }
+  nav {
+    background: var(--panel);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    overflow-x: auto;
+  }
+  nav ol {
+    margin: 0; padding: 0; list-style: none;
+    display: flex; flex-wrap: wrap; gap: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+  }
+  nav a {
+    color: var(--accent);
+    text-decoration: none;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+  }
+  nav a:hover { background: var(--panel-2); }
+  main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+  section.fn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  section.fn header.fn-header {
+    background: var(--panel-2);
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .fn-title { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; }
+  .fn-title h2 { margin: 0; font-size: 1.4rem; color: var(--accent); font-family: "JetBrains Mono", "Courier New", monospace; }
+  .fn-line { color: var(--muted); font-size: 0.85rem; font-family: monospace; }
+  .tier {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .tier-1 { background: #1f6feb; color: #fff; }
+  .tier-2 { background: #238636; color: #fff; }
+  .tier-3 { background: #6e7681; color: #fff; }
+
+  .fn-body { padding: 1.5rem; }
+  .fn-desc {
+    color: var(--text);
+    margin: 0 0 1.5rem 0;
+    padding: 0.75rem 1rem;
+    background: rgba(88, 166, 255, 0.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+  }
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 1100px) { .split { grid-template-columns: 1fr; } }
+
+  .pane { display: flex; flex-direction: column; }
+  .pane-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+  pre[class*="language-"] {
+    margin: 0;
+    border-radius: 6px;
+    padding: 1rem;
+    font-size: 0.85rem;
+    background: var(--panel-2) !important;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    flex: 1;
+  }
+  code[class*="language-"] { font-size: 0.85rem; }
+  .mermaid {
+    background: var(--panel-2);
+    border-radius: 6px;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    flex: 1;
+    text-align: center;
+  }
+
+  .worked {
+    margin-top: 1.5rem;
+    background: rgba(126, 231, 135, 0.05);
+    border: 1px solid #238636;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+  }
+  .worked h4 {
+    margin: 0 0 0.75rem 0;
+    color: var(--accent-2);
+    font-size: 0.95rem;
+  }
+  .worked .step {
+    margin: 0.5rem 0;
+    padding-left: 1rem;
+    border-left: 2px solid var(--accent-2);
+    font-family: monospace;
+    font-size: 0.85rem;
+  }
+  .worked .answer {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(126, 231, 135, 0.12);
+    border-radius: 4px;
+    font-family: monospace;
+    color: var(--accent-2);
+  }
+
+  .key-decode {
+    margin-top: 1rem;
+    background: var(--panel-3);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+  .key-decode strong { color: var(--warn); font-family: monospace; }
+
+  footer { text-align: center; color: var(--muted); padding: 2rem; font-size: 0.85rem; }
+  a { color: var(--accent); }
+
+  code { font-family: "JetBrains Mono", "Courier New", monospace; }
+  p code, li code, td code, .fn-desc code {
+    background: var(--panel-3);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--warn);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>simulation.py — Interactive Code Tour</h1>
+  <p>
+    Each function shown as: <strong>code on the left, flowchart of that exact code on the right.</strong>
+    Math-heavy functions include a worked example with real numbers so you can trace the formulas step by step.
+    <span class="tier tier-1">Tier 1</span> = must understand · <span class="tier tier-2">Tier 2</span> = should understand · <span class="tier tier-3">Tier 3</span> = nice to know.
+  </p>
+</header>
+
+<nav>
+  <ol>
+    <li><a href="#fn-wb-latest">_wb_latest</a></li>
+    <li><a href="#fn-baseline">fetch_world_bank_baseline</a></li>
+    <li><a href="#fn-sectors">fetch_world_bank_sectors</a></li>
+    <li><a href="#fn-get-baseline">get_country_baseline</a></li>
+    <li><a href="#fn-ai-adoption">ai_adoption ★</a></li>
+    <li><a href="#fn-initial-state">initial_state</a></li>
+    <li><a href="#fn-step-year">step_year ★</a></li>
+    <li><a href="#fn-skill-breakdown">skill_breakdown</a></li>
+    <li><a href="#fn-wages">wages_by_skill</a></li>
+    <li><a href="#fn-sector-breakdown">sector_breakdown</a></li>
+    <li><a href="#fn-gini">gini_index</a></li>
+    <li><a href="#fn-run-scenario">run_scenario ★</a></li>
+    <li><a href="#fn-compare">compare_scenarios</a></li>
+    <li><a href="#fn-monte">monte_carlo</a></li>
+    <li><a href="#fn-sensitivity">sensitivity</a></li>
+    <li><a href="#fn-wb-unem">fetch_world_bank_unemployment</a></li>
+    <li><a href="#fn-validate">validate</a></li>
+    <li><a href="#fn-outputs">summarize / report / export_csv</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ─────────────────────────────────── _wb_latest ─── -->
+<section class="fn" id="fn-wb-latest">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>_wb_latest</h2>
+      <span class="fn-line">lines 75–87</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      A private helper that fetches a single World Bank indicator and returns the most recent non-null value.
+      Every other "fetch" function in the file goes through this one.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre class="line-numbers" data-start="75"><code class="language-python">def _wb_latest(indicator: str, country: str = "WLD") -> Optional[float]:
+    """Return the most-recent non-null value for a World Bank indicator."""
+    url = f"https://api.worldbank.org/v2/country/{country}/indicator/{indicator}"
+    try:
+        resp = requests.get(url, params={"format": "json", "per_page": 20}, timeout=8)
+        resp.raise_for_status()
+        payload = resp.json()
+        for row in payload[1]:
+            if row.get("value") is not None:
+                return float(row["value"])
+    except Exception:
+        return None
+    return None</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: indicator, country] --> B["Build URL:<br/>api.worldbank.org/v2/country/<br/>{country}/indicator/{indicator}"]
+    B --> C{"requests.get<br/>timeout=8s"}
+    C -->|HTTP error /<br/>timeout| X[return None]
+    C -->|OK| D["Parse JSON<br/>payload[1] = list of yearly rows"]
+    D --> E{"For each row<br/>newest first"}
+    E -->|"value is None"| E
+    E -->|"value is a number"| F[return float - value]
+    E -->|all 20 rows null| X
+    style F fill:#238636,color:#fff
+    style X fill:#6e7681,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="key-decode">
+      <strong>Keywords:</strong> <code>Optional[float]</code> = "returns a number OR None" ·
+      <code>f"..."</code> = f-string, inserts variables ·
+      <code>per_page=20</code> = ask for up to 20 years of data ·
+      <code>try / except</code> = "try this; if anything breaks, do that instead" ·
+      <code>payload[1]</code> = the WB API returns <code>[metadata, [rows]]</code>, we want the rows.
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── fetch_world_bank_baseline ─── -->
+<section class="fn" id="fn-baseline">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>fetch_world_bank_baseline</h2>
+      <span class="fn-line">lines 90–112</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Fetches employment, labor force, GDP, and unemployment for one country. If employment isn't directly available
+      (true for every country except <code>WLD</code>), derives it from labor force × (1 − unemployment rate).
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def fetch_world_bank_baseline(country: str = "WLD") -> Dict[str, Any]:
+    employment  = _wb_latest("SL.EMP.TOTL",    country)
+    labor_force = _wb_latest("SL.TLF.TOTL.IN", country)
+    gdp_usd     = _wb_latest("NY.GDP.MKTP.CD", country)
+    unem_pct    = _wb_latest("SL.UEM.TOTL.ZS", country)
+
+    if employment is None and labor_force is not None and unem_pct is not None:
+        employment = labor_force * (1.0 - unem_pct / 100.0)
+
+    live = bool(labor_force and gdp_usd and (employment or unem_pct))
+    return {
+        "country":      country,
+        "employment":   employment   or float(INITIAL_JOBS),
+        "labor_force":  labor_force  or float(INITIAL_WORKFORCE),
+        "gdp_trillion": (gdp_usd / 1e12) if gdp_usd else INITIAL_GDP,
+        "unemployment_pct": unem_pct,
+        "live":         live,
+    }</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: country code] --> B["Fetch 4 WB indicators<br/>via _wb_latest"]
+    B --> C["employment<br/>SL.EMP.TOTL"]
+    B --> D["labor_force<br/>SL.TLF.TOTL.IN"]
+    B --> E["gdp_usd<br/>NY.GDP.MKTP.CD"]
+    B --> F["unem_pct<br/>SL.UEM.TOTL.ZS"]
+    C & D & E & F --> G{employment<br/>is None?}
+    G -->|Yes - typical for<br/>non-WLD| H["Derive:<br/>employment =<br/>labor_force × (1 − unem/100)"]
+    G -->|No - WLD only| I[Use as-is]
+    H --> J{Did we get<br/>real data?}
+    I --> J
+    J -->|labor_force AND<br/>gdp_usd AND<br/>employment-or-unem| K[live = True]
+    J -->|Missing critical| L[live = False]
+    K --> M["Build result dict.<br/>Each field uses 'or'<br/>to fall back to<br/>INITIAL_* constant"]
+    L --> M
+    M --> N["Convert gdp:<br/>raw USD / 1e12<br/>= trillions"]
+    N --> O[Return dict]
+    style O fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="key-decode">
+      <strong>The fallback pattern:</strong> <code>employment or float(INITIAL_JOBS)</code> means
+      "if employment is truthy (not None, not 0), use it — otherwise use 3.4 billion." Same for labor_force and GDP.
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── fetch_world_bank_sectors ─── -->
+<section class="fn" id="fn-sectors">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>fetch_world_bank_sectors</h2>
+      <span class="fn-line">lines 115–141</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      The World Bank reports 3 sector buckets (Agriculture/Industry/Services). The model uses 4
+      (Tech/Manufacturing/Healthcare/Services). This function does the mapping.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def fetch_world_bank_sectors(country: str = "WLD") -> Dict[str, float]:
+    agri = _wb_latest("SL.AGR.EMPL.ZS", country)
+    ind  = _wb_latest("SL.IND.EMPL.ZS", country)
+    srv  = _wb_latest("SL.SRV.EMPL.ZS", country)
+    if not all((agri, ind, srv)):
+        return {sec: SECTORS[sec][0] for sec in SECTORS}
+
+    agri, ind, srv = agri / 100.0, ind / 100.0, srv / 100.0
+    services_bucket = srv + agri
+    return {
+        "Tech":          round(services_bucket * 0.18, 4),
+        "Manufacturing": round(ind, 4),
+        "Healthcare":    round(services_bucket * 0.24, 4),
+        "Services":      round(services_bucket * 0.58, 4),
+    }</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: country] --> B["Fetch 3 WB<br/>sector indicators"]
+    B --> C[agri = SL.AGR.EMPL.ZS]
+    B --> D[ind = SL.IND.EMPL.ZS]
+    B --> E[srv = SL.SRV.EMPL.ZS]
+    C & D & E --> F{Any of<br/>them None?}
+    F -->|Yes| G["Return fallback<br/>SECTORS defaults"]
+    F -->|All present| H["Divide each by 100<br/>(percent → fraction)"]
+    H --> I["services_bucket =<br/>srv + agri<br/>(roll Agri into Svc)"]
+    I --> J["Tech = bucket × 0.18<br/>Mfg = ind (1:1)<br/>Health = bucket × 0.24<br/>Svc = bucket × 0.58"]
+    J --> K[Return shares dict]
+    style K fill:#238636,color:#fff
+    style G fill:#f0883e,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="worked">
+      <h4>Worked example — USA</h4>
+      <div class="step">agri = 1.4, ind = 19.4, srv = 79.2 (from WB)</div>
+      <div class="step">After ÷100: agri=0.014, ind=0.194, srv=0.792</div>
+      <div class="step">services_bucket = 0.792 + 0.014 = 0.806</div>
+      <div class="step">Tech = 0.806 × 0.18 = 0.1451</div>
+      <div class="step">Manufacturing = 0.194</div>
+      <div class="step">Healthcare = 0.806 × 0.24 = 0.1934</div>
+      <div class="step">Services = 0.806 × 0.58 = 0.4675</div>
+      <div class="answer">Total: 0.1451 + 0.194 + 0.1934 + 0.4675 = 1.000 ✓</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── get_country_baseline ─── -->
+<section class="fn" id="fn-get-baseline">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>get_country_baseline</h2>
+      <span class="fn-line">lines 144–151</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Wraps both fetchers in a cache. First call for a country hits the World Bank (slow). All later calls return
+      from memory (instant). The cache lives for the whole process lifetime.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def get_country_baseline(country: str = "WLD") -> Dict[str, Any]:
+    if country in _BASELINE_CACHE:
+        return _BASELINE_CACHE[country]
+    base = fetch_world_bank_baseline(country)
+    base["sectors"] = fetch_world_bank_sectors(country)
+    _BASELINE_CACHE[country] = base
+    return base</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: country] --> B{country in<br/>_BASELINE_CACHE?}
+    B -->|Yes - cache hit| C["Return cached dict<br/>(instant)"]
+    B -->|No - cache miss| D["fetch_world_bank_baseline"]
+    D --> E[fetch_world_bank_sectors]
+    E --> F["base['sectors'] = sectors"]
+    F --> G["_BASELINE_CACHE[country] = base"]
+    G --> H[Return base]
+    style C fill:#238636,color:#fff
+    style H fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="key-decode">
+      <strong>Why caching:</strong> Each baseline fetch makes 7 HTTPS calls to the World Bank. Without caching,
+      a single user clicking around 4 pages would trigger 28+ requests. With caching, only the first page pays the cost.
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── ai_adoption ─── -->
+<section class="fn" id="fn-ai-adoption">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>ai_adoption</h2>
+      <span class="fn-line">lines 158–161</span>
+      <span class="tier tier-1">Tier 1 — Core</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      <strong>The driver of the whole model.</strong> A logistic S-curve that says: AI adoption starts near 0,
+      hits 50% at year 10, and saturates near 100% by year 20. The <code>speed</code> parameter makes the curve steeper or flatter.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def ai_adoption(year_index: int, speed: float = 1.0) -> float:
+    """Logistic S-curve, midpoint at year 10, returns 0..1."""
+    k = 0.35 * speed
+    return 1.0 / (1.0 + np.exp(-k * (year_index - 10.0)))</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: year_index, speed] --> B["k = 0.35 × speed<br/>(steepness coefficient)"]
+    B --> C["Compute the<br/>logistic function:<br/>━━━━━━━━━━━━<br/>1 / (1 + e^(-k × (year - 10)))"]
+    C --> D{year &lt; 10?}
+    D -->|Yes| E[Output &lt; 0.5<br/>adoption is low]
+    D -->|year = 10| F[Output ≈ 0.5<br/>midpoint]
+    D -->|year &gt; 10| G[Output &gt; 0.5<br/>past halfway]
+    E & F & G --> H[Return value 0..1]
+    style H fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="worked">
+      <h4>Worked example — speed = 1.0</h4>
+      <div class="step">k = 0.35 × 1.0 = 0.35</div>
+      <div class="step">Year 0 (2026): 1 / (1 + e^(-0.35 × -10)) = 1 / (1 + e^3.5) = 1 / 34.1 = <strong>0.029</strong> (≈3%)</div>
+      <div class="step">Year 5 (2031): 1 / (1 + e^(-0.35 × -5)) = 1 / (1 + e^1.75) = 1 / 6.75 = <strong>0.148</strong> (≈15%)</div>
+      <div class="step">Year 10 (2036): 1 / (1 + e^0) = 1 / 2 = <strong>0.500</strong> (exactly 50% — the midpoint)</div>
+      <div class="step">Year 15 (2041): 1 / (1 + e^(-1.75)) = 1 / 1.174 = <strong>0.852</strong> (≈85%)</div>
+      <div class="step">Year 20 (2046): 1 / (1 + e^(-3.5)) = 1 / 1.030 = <strong>0.971</strong> (≈97%)</div>
+      <div class="answer">The classic S-shape: slow → fast → slow → saturation.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── initial_state ─── -->
+<section class="fn" id="fn-initial-state">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>initial_state</h2>
+      <span class="fn-line">lines 164–172</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Builds the starting <code>state</code> dict that the year-loop will mutate. Pulls from the WB cache and seeds
+      adoption at <code>INITIAL_ADOPTION = 0.05</code> (5%).
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def initial_state(country: str = "WLD") -> Dict[str, float]:
+    base = get_country_baseline(country)
+    return {
+        "total_jobs":   float(base["employment"]),
+        "workforce":    float(base["labor_force"]),
+        "ai_adoption":  INITIAL_ADOPTION,
+        "_gdp_base":    float(base["gdp_trillion"]),
+        "_country":     country,
+    }</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: country] --> B["base = get_country_baseline"]
+    B --> C["Build state dict:<br/>• total_jobs = employment<br/>• workforce = labor_force<br/>• ai_adoption = 0.05<br/>• _gdp_base = gdp_trillion<br/>• _country = country"]
+    C --> D[Return state]
+    style D fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── step_year ─── -->
+<section class="fn" id="fn-step-year">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>step_year</h2>
+      <span class="fn-line">lines 175–192</span>
+      <span class="tier tier-1">Tier 1 — Core</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      <strong>The yearly engine.</strong> Advances the state by one year: updates adoption, computes jobs lost & created,
+      grows the workforce, then computes unemployment, productivity, GDP, and consumer spending.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def step_year(state, year_index, auto_rate, speed):
+    state["ai_adoption"] = ai_adoption(year_index, speed)
+    adoption = state["ai_adoption"]
+
+    jobs_lost    = state["total_jobs"] * auto_rate * adoption
+    jobs_created = state["total_jobs"] * auto_rate * adoption * JOB_CREATION_RATIO
+    state["total_jobs"] = max(0.0, state["total_jobs"] - jobs_lost + jobs_created)
+    state["workforce"] *= (1.0 + WORKFORCE_GROWTH)
+
+    gdp_base    = state.get("_gdp_base", INITIAL_GDP)
+    unem        = max(0.0, (state["workforce"] - state["total_jobs"]) / state["workforce"])
+    productivity= 1.0 + (adoption ** 0.7) * 0.85
+    gdp         = gdp_base * (1.0 + (productivity - 1.0) * 0.6 - unem * 0.4)
+    spending    = gdp * max(0.30, 0.68 - unem * 1.2)
+
+    return {"unem": unem, "productivity": productivity,
+            "gdp": gdp, "spending": spending}</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: state, year_index, auto_rate, speed] --> B["Update adoption<br/>state['ai_adoption'] =<br/>ai_adoption(year, speed)"]
+    B --> C["jobs_lost =<br/>jobs × auto_rate × adoption"]
+    C --> D["jobs_created =<br/>jobs_lost × 0.60<br/>(JOB_CREATION_RATIO)"]
+    D --> E["Net jobs change:<br/>state['total_jobs'] =<br/>max(0, jobs - lost + created)"]
+    E --> F["Grow workforce<br/>state['workforce'] *= 1.008<br/>(+0.8% per year)"]
+    F --> G["Compute unemployment:<br/>unem = (workforce - jobs)<br/>/ workforce"]
+    G --> H["Compute productivity:<br/>prod = 1 + adoption^0.7 × 0.85"]
+    H --> I["Compute GDP:<br/>gdp = base ×<br/>(1 + (prod-1)×0.6 − unem×0.4)"]
+    I --> J["Compute spending:<br/>spending = gdp ×<br/>max(0.30, 0.68 − unem×1.2)"]
+    J --> K["Return dict:<br/>{unem, productivity,<br/>gdp, spending}"]
+    style K fill:#238636,color:#fff
+    style B fill:#1f6feb,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="worked">
+      <h4>Worked example — Year 5 (2031), moderate scenario, WLD</h4>
+      <div class="step">Inputs: total_jobs=3.4B, workforce=3.6B, year_index=5, auto_rate=0.05, speed=1.0</div>
+      <div class="step">adoption = ai_adoption(5, 1.0) = 0.148 (≈15%)</div>
+      <div class="step">jobs_lost = 3.4B × 0.05 × 0.148 = 25.2M</div>
+      <div class="step">jobs_created = 25.2M × 0.60 = 15.1M</div>
+      <div class="step">total_jobs → 3.4B − 25.2M + 15.1M = 3.39B (lost net 10.1M jobs)</div>
+      <div class="step">workforce → 3.6B × 1.008 = 3.629B</div>
+      <div class="step">unem = (3.629B − 3.39B) / 3.629B = 0.0659 (6.6%)</div>
+      <div class="step">productivity = 1 + 0.148^0.7 × 0.85 = 1 + 0.255 × 0.85 = 1.217 (≈22% boost)</div>
+      <div class="step">gdp = 105 × (1 + 0.217×0.6 − 0.066×0.4) = 105 × 1.104 = $115.9T</div>
+      <div class="step">spending = 115.9 × max(0.30, 0.68 − 0.066×1.2) = 115.9 × 0.601 = $69.7T</div>
+      <div class="answer">Returns: {unem: 0.066, productivity: 1.217, gdp: 115.9, spending: 69.7}</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── skill_breakdown ─── -->
+<section class="fn" id="fn-skill-breakdown">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>skill_breakdown</h2>
+      <span class="fn-line">lines 204–205</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Slices the current workforce into the 5 skill tiers using fixed shares from the <code>SKILLS</code> constant.
+      Note: shares don't change year to year — the model treats the distribution as stable.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def skill_breakdown(state: Dict[str, float]) -> Dict[str, int]:
+    return {tier: int(state["workforce"] * SKILLS[tier][0])
+            for tier in SKILLS}</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: state] --> B[For each tier in SKILLS]
+    B --> C["SKILLS[tier][0]<br/>= share of workforce<br/>(L1=0.20, L2=0.30, ...)"]
+    C --> D["count = workforce × share<br/>cast to int"]
+    D --> E[Add to result dict]
+    E -->|loop| B
+    E --> F[Return dict]
+    style F fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="worked">
+      <h4>Worked example — workforce = 3.6B</h4>
+      <div class="step">L1_basic: 3.6B × 0.20 = 720,000,000</div>
+      <div class="step">L2_semi: 3.6B × 0.30 = 1,080,000,000</div>
+      <div class="step">L3_intermediate: 3.6B × 0.25 = 900,000,000</div>
+      <div class="step">L4_advanced: 3.6B × 0.15 = 540,000,000</div>
+      <div class="step">L5_expert: 3.6B × 0.10 = 360,000,000</div>
+      <div class="answer">Total: 3.6B ✓ (shares sum to 1.00)</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── wages_by_skill ─── -->
+<section class="fn" id="fn-wages">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>wages_by_skill</h2>
+      <span class="fn-line">lines 208–210</span>
+      <span class="tier tier-2">Tier 2</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Computes per-tier wages at the current adoption level. <strong>Low-skill wages drop, high-skill wages rise</strong> —
+      driven by the per-tier <code>wage_pressure</code> in the <code>SKILLS</code> constant.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def wages_by_skill(adoption: float) -> Dict[str, float]:
+    return {tier: round(SKILLS[tier][1] * (1.0 + SKILLS[tier][3] * adoption), 0)
+            for tier in SKILLS}</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: adoption 0..1] --> B[For each tier in SKILLS]
+    B --> C["base_wage = SKILLS[tier][1]<br/>(L1=$33K, L5=$200K)"]
+    C --> D["pressure = SKILLS[tier][3]<br/>(L1=-0.15, L5=+0.22)"]
+    D --> E["wage = base × (1 + pressure × adoption)"]
+    E --> F{pressure &lt; 0?}
+    F -->|Yes - low skill| G["Wage shrinks<br/>as adoption rises"]
+    F -->|No - high skill| H["Wage grows<br/>as adoption rises"]
+    G & H --> I[round to nearest $1]
+    I -->|loop| B
+    I --> J[Return wages dict]
+    style J fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="worked">
+      <h4>Worked example — adoption = 1.0 (full)</h4>
+      <div class="step">L1_basic: 33,000 × (1 + (−0.15) × 1.0) = 33,000 × 0.85 = <strong>$28,050</strong> (lost 15%)</div>
+      <div class="step">L2_semi: 49,000 × (1 + (−0.08) × 1.0) = 49,000 × 0.92 = <strong>$45,080</strong> (lost 8%)</div>
+      <div class="step">L3_intermediate: 73,000 × (1 + 0.02) = <strong>$74,460</strong> (gained 2%)</div>
+      <div class="step">L4_advanced: 115,000 × (1 + 0.12) = <strong>$128,800</strong> (gained 12%)</div>
+      <div class="step">L5_expert: 200,000 × (1 + 0.22) = <strong>$244,000</strong> (gained 22%)</div>
+      <div class="answer">At full adoption: L1→L5 wage gap widens from 6x to 8.7x.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── sector_breakdown ─── -->
+<section class="fn" id="fn-sector-breakdown">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>sector_breakdown</h2>
+      <span class="fn-line">lines 213–230</span>
+      <span class="tier tier-2">Tier 2</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Distributes total jobs across the 4 sectors using the country's WB-derived shares, then applies
+      per-sector automation shrinkage, AI-driven growth, and Tech spillover effects.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def sector_breakdown(state, auto_rate):
+    adoption = state["ai_adoption"]
+    total    = state["total_jobs"]
+    country  = state.get("_country", "WLD")
+    shares   = get_country_baseline(country).get("sectors") \
+               or {sec: SECTORS[sec][0] for sec in SECTORS}
+    jobs = {sec: total * shares.get(sec, SECTORS[sec][0]) for sec in SECTORS}
+
+    # automation shrinkage + AI-driven growth (per-sector)
+    for sec, (_, sector_auto, growth, _r) in SECTORS.items():
+        jobs[sec] *= (1.0 - sector_auto * auto_rate * adoption)
+        jobs[sec] *= (1.0 + growth * adoption)
+
+    # Tech spillover: helps Services + Healthcare, hurts Mfg.
+    spillover = jobs["Tech"] * 0.02 * adoption
+    jobs["Services"]      += spillover * 0.5
+    jobs["Manufacturing"] -= spillover * 0.3
+    jobs["Healthcare"]    += spillover * 0.1
+    return {sec: int(v) for sec, v in jobs.items()}</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: state, auto_rate] --> B["Get adoption, total jobs, country"]
+    B --> C["Get sector shares from<br/>country baseline cache"]
+    C --> D["Initial allocation:<br/>jobs[sec] = total × share"]
+    D --> E[For each sector]
+    E --> F["Shrinkage:<br/>jobs *= 1 − sector_auto × auto_rate × adoption"]
+    F --> G["Growth:<br/>jobs *= 1 + growth × adoption"]
+    G -->|loop| E
+    G --> H["Tech spillover:<br/>spillover = Tech × 0.02 × adoption"]
+    H --> I["Services += spillover × 0.5"]
+    I --> J["Manufacturing -= spillover × 0.3"]
+    J --> K["Healthcare += spillover × 0.1"]
+    K --> L[Cast to int, return dict]
+    style L fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="worked">
+      <h4>Worked example — Year 10 (2036), USA, moderate, total_jobs = 160M</h4>
+      <div class="step">adoption = 0.5, shares: {Tech:0.145, Mfg:0.194, Health:0.193, Svc:0.468}</div>
+      <div class="step">Initial: Tech=23.2M, Mfg=31M, Health=30.9M, Svc=74.9M</div>
+      <div class="step">Tech: shrink × (1 − 0.04×0.05×0.5)=0.999 → grow × (1 + 0.06×0.5)=1.030 → 23.86M</div>
+      <div class="step">Mfg: shrink × (1 − 0.08×0.05×0.5)=0.998 → grow × (1 + 0.01×0.5)=1.005 → 31.10M</div>
+      <div class="step">Spillover = 23.86M × 0.02 × 0.5 = 238.6K</div>
+      <div class="step">Services gets +119K, Manufacturing loses 71.6K, Healthcare gets +23.9K</div>
+      <div class="answer">Tech grows fastest; Manufacturing shrinks; Tech success leaks into Services.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── gini_index ─── -->
+<section class="fn" id="fn-gini">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>gini_index</h2>
+      <span class="fn-line">lines 233–243</span>
+      <span class="tier tier-2">Tier 2</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Computes the Gini coefficient (income inequality) from the wage and skill distributions.
+      Returns 0 (perfect equality) to ~1 (one person earns everything).
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def gini_index(wages, skills) -> float:
+    """Gini coefficient (0=equal, ~1=maximally unequal)."""
+    incomes = []
+    for tier, wage in wages.items():
+        count = max(1, skills.get(tier, 1) // 10_000_000)
+        incomes.extend([wage] * count)
+    if not incomes:
+        return 0.0
+    arr = np.array(sorted(incomes), dtype=float)
+    n   = arr.size
+    return float((2 * np.sum(np.arange(1, n + 1) * arr)
+                  / (n * arr.sum())) - (n + 1) / n)</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: wages, skills] --> B["Build synthetic<br/>income list"]
+    B --> C[For each tier]
+    C --> D["count =<br/>skills[tier] // 10M<br/>(scale down for speed)"]
+    D --> E["Add wage to list<br/>'count' times"]
+    E -->|loop| C
+    E --> F{Empty list?}
+    F -->|Yes| G[Return 0.0]
+    F -->|No| H[Sort ascending]
+    H --> I["Apply Gini formula:<br/>━━━━━━━━━━━━<br/>(2 × Σ(i × y_i)) / (n × Σy)<br/>− (n + 1) / n"]
+    I --> J[Return Gini 0..1]
+    style J fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="worked">
+      <h4>Worked example — equality vs. extreme inequality</h4>
+      <div class="step">If all 5 tiers earn $50K: incomes=[50K,50K,50K,50K,50K] → Gini = 0</div>
+      <div class="step">If 4 tiers earn $1 and 1 tier earns $100K: incomes=[1,1,1,1,100000] → Gini ≈ 0.80</div>
+      <div class="step">Real-world calibration: USA ≈ 0.41, Sweden ≈ 0.29, South Africa ≈ 0.63</div>
+      <div class="answer">In this model: as AI adoption rises, L1 wages drop and L5 wages rise → Gini increases.</div>
+    </div>
+    <div class="key-decode">
+      <strong>Why divide by 10M:</strong> <code>skills[tier]</code> is hundreds of millions of people.
+      The Gini formula needs sorting, which is O(n log n) — too slow on 3.4 billion entries.
+      Dividing by 10M scales the list down to a few hundred entries while preserving the ratio.
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── run_scenario ─── -->
+<section class="fn" id="fn-run-scenario">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>run_scenario</h2>
+      <span class="fn-line">lines 250–299</span>
+      <span class="tier tier-1">Tier 1 — Core</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      <strong>The main entry point.</strong> Runs a full N-year simulation and returns a JSON-ready dict
+      with year-by-year arrays of unemployment, GDP, jobs, adoption, Gini, skills, wages, sectors, plus summary stats.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code (abridged — see file for full)</div>
+<pre><code class="language-python">def run_scenario(scenario="moderate", horizon=20,
+                 adoption_speed=1.0, override_rate=None, country="WLD"):
+    auto_rate = override_rate if override_rate is not None \
+                else SCENARIO_RATES.get(scenario, 0.05)
+    state = initial_state(country)
+
+    results = {
+        "scenario": scenario, "country": country,
+        "automation_rate": auto_rate,
+        "years": [], "unemployment": [], "gdp": [],
+        "total_jobs": [], "ai_adoption": [], "gini": [],
+        "productivity": [], "consumer_spending": [],
+        "skills":  {tier: [] for tier in SKILLS},
+        "wages":   {tier: [] for tier in SKILLS},
+        "sectors": {sec:  [] for sec  in SECTORS},
+    }
+
+    for i in range(horizon):
+        step    = step_year(state, i, auto_rate, adoption_speed)
+        skills  = skill_breakdown(state)
+        sectors = sector_breakdown(state, auto_rate)
+        wages   = wages_by_skill(state["ai_adoption"])
+        gini    = gini_index(wages, skills)
+
+        results["years"].append(BASE_YEAR + i)
+        results["unemployment"].append(round(step["unem"] * 100, 2))
+        results["gdp"].append(round(step["gdp"], 3))
+        # ... append all other arrays ...
+
+    results["summary"] = summarize(results)
+    results["report"]  = report(results)
+    return results</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: scenario, horizon, speed, country] --> B["auto_rate = override OR<br/>SCENARIO_RATES[scenario]"]
+    B --> C[state = initial_state]
+    C --> D[Initialize empty<br/>results dict]
+    D --> E[Loop: i = 0 to horizon-1]
+    E --> F[step_year]
+    F --> G[skill_breakdown]
+    G --> H[sector_breakdown]
+    H --> I[wages_by_skill]
+    I --> J[gini_index]
+    J --> K[Append all values<br/>to results arrays]
+    K -->|next year| E
+    K --> L[summarize - stats]
+    L --> M[report - final values]
+    M --> N[Return results JSON-ready]
+    style N fill:#238636,color:#fff
+    style F fill:#1f6feb,color:#fff
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── compare_scenarios ─── -->
+<section class="fn" id="fn-compare">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>compare_scenarios</h2>
+      <span class="fn-line">lines 302–305</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Runs all 3 scenarios (slow/moderate/rapid) back-to-back and returns the bundle.
+      Frontend uses this for the "side-by-side comparison" page.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def compare_scenarios(horizon=20, adoption_speed=1.0, country="WLD"):
+    return {name: run_scenario(name, horizon, adoption_speed, country=country)
+            for name in SCENARIO_RATES}</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: horizon, speed, country] --> B[run_scenario - slow]
+    A --> C[run_scenario - moderate]
+    A --> D[run_scenario - rapid]
+    B & C & D --> E["Return dict:<br/>{slow: {...},<br/>moderate: {...},<br/>rapid: {...}}"]
+    style E fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── monte_carlo ─── -->
+<section class="fn" id="fn-monte">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>monte_carlo</h2>
+      <span class="fn-line">lines 308–339</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Runs 1,000 simulations with randomized parameters, then reports the mean and 95% confidence interval.
+      Tells you not just "what we predict" but "how uncertain that prediction is."
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def monte_carlo(n_simulations=1000, horizon=20):
+    rng = np.random.default_rng(42)
+    unem_matrix = np.zeros((n_simulations, horizon))
+    gdp_matrix  = np.zeros((n_simulations, horizon))
+
+    for sim in range(n_simulations):
+        auto_rate = rng.uniform(0.02, 0.10)
+        speed     = rng.uniform(0.60, 1.50)
+        state     = initial_state("WLD")
+        state["total_jobs"] *= rng.uniform(0.95, 1.05)
+        state["workforce"]  *= rng.uniform(0.95, 1.05)
+        for i in range(horizon):
+            step = step_year(state, i, auto_rate, speed)
+            unem_matrix[sim, i] = step["unem"] * 100
+            gdp_matrix[sim, i]  = step["gdp"]
+
+    return {
+        "years": list(range(BASE_YEAR, BASE_YEAR + horizon)),
+        "n_simulations": n_simulations,
+        "unemployment": {
+            "mean":  np.mean(unem_matrix, axis=0).round(2).tolist(),
+            "lower": np.percentile(unem_matrix, 2.5,  axis=0).round(2).tolist(),
+            "upper": np.percentile(unem_matrix, 97.5, axis=0).round(2).tolist(),
+        },
+        "gdp": { ... same shape ... },
+    }</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: n_sims, horizon] --> B["Seed RNG (seed=42<br/>for reproducibility)"]
+    B --> C["Pre-allocate 2D arrays:<br/>unem_matrix[n_sims, horizon]<br/>gdp_matrix[n_sims, horizon]"]
+    C --> D[Outer loop: sim = 0..999]
+    D --> E["Random auto_rate<br/>uniform 0.02..0.10"]
+    E --> F["Random speed<br/>uniform 0.60..1.50"]
+    F --> G["Random ±5% jitter<br/>on total_jobs, workforce"]
+    G --> H[Inner loop: year = 0..19]
+    H --> I[step_year]
+    I --> J[Record unem and gdp<br/>in matrices]
+    J -->|next year| H
+    J -->|next sim| D
+    J --> K["Compute mean and<br/>2.5% / 97.5% percentiles<br/>across all sims"]
+    K --> L[Return mean + CI bands]
+    style L fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="key-decode">
+      <strong>seed=42:</strong> Makes the random results reproducible. Running it twice gives identical output.
+      <strong>2.5% / 97.5%:</strong> The 2.5th and 97.5th percentiles — together they form a 95% confidence band.
+      "95% of all simulations had unemployment between these two lines."
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── sensitivity ─── -->
+<section class="fn" id="fn-sensitivity">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>sensitivity</h2>
+      <span class="fn-line">lines 342–368</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Perturbs each key parameter by ±20% and measures the change in final-year unemployment.
+      Tells you which knobs matter most.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def sensitivity(scenario="moderate", country="WLD"):
+    base = run_scenario(scenario, country=country)
+    base_unem = base["unemployment"][-1]
+    base_rate = SCENARIO_RATES[scenario]
+
+    high_rate  = run_scenario(scenario, override_rate=base_rate*1.20, country=country)["unemployment"][-1]
+    low_rate   = run_scenario(scenario, override_rate=base_rate*0.80, country=country)["unemployment"][-1]
+    high_speed = run_scenario(scenario, adoption_speed=1.20, country=country)["unemployment"][-1]
+    low_speed  = run_scenario(scenario, adoption_speed=0.80, country=country)["unemployment"][-1]
+
+    return {
+        "automation_rate": {
+            "base": base_unem, "high": high_rate, "low": low_rate,
+            "impact_high": high_rate - base_unem,
+            "impact_low":  low_rate  - base_unem,
+        },
+        "adoption_speed": { ... same shape ... },
+    }</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: scenario, country] --> B[Baseline run<br/>get final unemployment]
+    B --> C[Run with +20% auto_rate]
+    B --> D[Run with -20% auto_rate]
+    B --> E[Run with +20% speed]
+    B --> F[Run with -20% speed]
+    C & D & E & F --> G["Compute deltas:<br/>impact = perturbed − base"]
+    G --> H["Return nested dict<br/>showing which param<br/>moves unem the most"]
+    style H fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── fetch_world_bank_unemployment ─── -->
+<section class="fn" id="fn-wb-unem">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>fetch_world_bank_unemployment</h2>
+      <span class="fn-line">lines 382–399</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Fetches the multi-year unemployment time series from the World Bank for backtesting.
+      Falls back to synthetic data if the network fails — note the 2008 and 2020 crisis spikes baked in.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def fetch_world_bank_unemployment(start=2000, end=2020):
+    url = "https://api.worldbank.org/v2/country/WLD/indicator/SL.UEM.TOTL.ZS"
+    try:
+        resp = requests.get(url, params={"date": f"{start}:{end}",
+                                          "format": "json", "per_page": 100},
+                            timeout=10)
+        resp.raise_for_status()
+        payload = resp.json()
+        rows = sorted(
+            ((int(r["date"]), r["value"]) for r in payload[1] if r["value"] is not None),
+            key=lambda x: x[0],
+        )
+        if rows:
+            return {"years": [y for y, _ in rows], "values": [v for _, v in rows]}
+    except Exception:
+        pass
+    years  = list(range(start, end + 1))
+    values = _SYNTHETIC_UNEM[: len(years)]
+    return {"years": years, "values": values}</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: start year, end year] --> B["Build WB URL with<br/>date range param"]
+    B --> C{HTTP GET success?}
+    C -->|Error| F[Use synthetic data]
+    C -->|OK| D["Parse JSON,<br/>filter non-null,<br/>sort by year ascending"]
+    D --> E{Got rows?}
+    E -->|Yes| G[Return real WB data]
+    E -->|No| F
+    F --> H["Build years 2000..2020,<br/>use _SYNTHETIC_UNEM"]
+    H --> I[Return synthetic]
+    G --> J[Return dict<br/>{years, values}]
+    I --> J
+    style G fill:#238636,color:#fff
+    style F fill:#f0883e,color:#fff
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── validate ─── -->
+<section class="fn" id="fn-validate">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>validate</h2>
+      <span class="fn-line">lines 402–429</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      <strong>Backtest the model.</strong> Runs a damped version of the simulation from 2000–2020 and
+      compares predicted unemployment to real WB data. Reports Mean Absolute Error and an accuracy score.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def validate(start=2000, end=2020):
+    real = fetch_world_bank_unemployment(start, end)
+    actual = real["values"]
+    years  = real["years"]
+
+    state = {"total_jobs": 120_000_000.0, "workforce": 130_000_000.0, "ai_adoption": 0.01}
+    predicted = []
+    for i, _ in enumerate(years):
+        # Historical AI adoption was tiny — dampen the S-curve.
+        state["ai_adoption"] = ai_adoption(i, speed=0.8) * 0.5
+        adoption = state["ai_adoption"]
+        lost     = state["total_jobs"] * 0.05 * adoption
+        created  = lost * JOB_CREATION_RATIO
+        state["total_jobs"] = max(0.0, state["total_jobs"] - lost + created)
+        state["workforce"] *= (1.0 + WORKFORCE_GROWTH)
+        unem = max(0.0, (state["workforce"] - state["total_jobs"]) / state["workforce"]) * 100
+        predicted.append(round(unem, 2))
+
+    mae = float(np.mean(np.abs(np.array(actual) - np.array(predicted))))
+    return {
+        "years": years, "actual": actual, "predicted": predicted,
+        "mae": round(mae, 4),
+        "accuracy": round(max(0.0, 100.0 - mae * 10.0), 2),
+        "label": f"Model Backtest {start}-{end}",
+    }</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flow</div>
+        <div class="mermaid">
+flowchart TD
+    A[Start: 2000-2020] --> B[Fetch real WB<br/>unemployment data]
+    B --> C["Setup small state:<br/>120M jobs, 130M workforce<br/>(scaled-down baseline)"]
+    C --> D[Loop over each year]
+    D --> E["adoption =<br/>ai_adoption(i, 0.8) × 0.5<br/>(historically AI was tiny)"]
+    E --> F["lost = jobs × 0.05 × adoption<br/>created = lost × 0.60"]
+    F --> G["Update jobs and workforce"]
+    G --> H["Compute unemployment %"]
+    H -->|next year| D
+    H --> I["MAE = mean(|actual − predicted|)"]
+    I --> J["accuracy =<br/>max(0, 100 − MAE × 10)"]
+    J --> K[Return dict]
+    style K fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+    <div class="key-decode">
+      <strong>Why dampen the S-curve:</strong> The default S-curve assumes AI is meaningful by year 10.
+      Historically (2000-2020) AI adoption was near zero — so we multiply by 0.5 and use speed=0.8 to flatten the curve.
+      Without this dampening, the model would predict massive AI-driven unemployment in years that had nothing to do with AI.
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────── outputs ─── -->
+<section class="fn" id="fn-outputs">
+  <header class="fn-header">
+    <div class="fn-title">
+      <h2>summarize / report / export_csv</h2>
+      <span class="fn-line">lines 436–481</span>
+      <span class="tier tier-3">Tier 3</span>
+    </div>
+  </header>
+  <div class="fn-body">
+    <div class="fn-desc">
+      Three small output helpers. <code>summarize</code> computes stats (mean/std/min/max). <code>report</code> picks out
+      headline final-year values. <code>export_csv</code> dumps the results to a spreadsheet.
+    </div>
+    <div class="split">
+      <div class="pane">
+        <div class="pane-label">Code</div>
+<pre><code class="language-python">def summarize(results):
+    summary = {}
+    for key in ("unemployment", "gdp", "ai_adoption", "gini", "productivity"):
+        arr = np.array(results.get(key, []), dtype=float)
+        if arr.size:
+            summary[key] = {
+                "mean": float(np.mean(arr)),
+                "std":  float(np.std(arr)),
+                "min":  float(np.min(arr)),
+                "max":  float(np.max(arr)),
+            }
+    return summary
+
+
+def report(results):
+    years = results.get("years", [])
+    return {
+        "scenario":               results.get("scenario"),
+        "automation_rate":        results.get("automation_rate"),
+        "horizon_years":          len(years),
+        "start_year":             years[0]  if years else BASE_YEAR,
+        "end_year":               years[-1] if years else BASE_YEAR + 19,
+        "final_unemployment_pct": results["unemployment"][-1],
+        "final_gdp_trillion":     results["gdp"][-1],
+        "final_ai_adoption_pct":  results["ai_adoption"][-1],
+        "final_gini":             results["gini"][-1],
+        "peak_unemployment":      max(results["unemployment"]),
+    }
+
+
+def export_csv(results, filepath="simulation_output.csv"):
+    rows = []
+    for i, year in enumerate(results["years"]):
+        row = {
+            "year":         year,
+            "unemployment": results["unemployment"][i],
+            "gdp":          results["gdp"][i],
+            "total_jobs":   results["total_jobs"][i],
+            "ai_adoption":  results["ai_adoption"][i],
+            "gini":         results["gini"][i],
+        }
+        for sec in results["sectors"]:
+            row[f"sector_{sec}"] = results["sectors"][sec][i]
+        rows.append(row)
+    pd.DataFrame(rows).to_csv(filepath, index=False)
+    return filepath</code></pre>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Logic flows</div>
+        <div class="mermaid">
+flowchart TD
+    A1[summarize] --> A2[For each metric<br/>unem, gdp, adoption, gini, prod]
+    A2 --> A3["Compute<br/>mean, std, min, max"]
+    A3 --> A4[Return summary dict]
+
+    B1[report] --> B2[Pick final-year<br/>values from results]
+    B2 --> B3["Add peak_unemployment =<br/>max of all years"]
+    B3 --> B4[Return headline dict]
+
+    C1[export_csv] --> C2[For each year]
+    C2 --> C3[Build one row dict<br/>with core metrics + sectors]
+    C3 -->|loop| C2
+    C3 --> C4["pandas.DataFrame.to_csv"]
+    C4 --> C5[Return filepath]
+    style A4 fill:#238636,color:#fff
+    style B4 fill:#238636,color:#fff
+    style C5 fill:#238636,color:#fff
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Interactive code tour for <code>backend/simulation.py</code> · Companion to <code>SIMULATION_EXPLAINED.md</code>, <code>KEYWORDS_GLOSSARY.md</code>, and <code>ARCHITECTURE_DIAGRAMS.html</code>.
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#1c2128',
+      primaryColor: '#1f6feb',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#58a6ff',
+      lineColor: '#8b949e',
+      secondaryColor: '#1c2128',
+      tertiaryColor: '#161b22',
+      mainBkg: '#1f6feb',
+      secondBkg: '#238636',
+      tertiaryBkg: '#8957e5'
+    },
+    flowchart: { curve: 'basis', padding: 15, nodeSpacing: 35, rankSpacing: 35 }
+  });
+</script>
+
+</body>
+</html>

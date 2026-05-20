@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Labor Market Simulation — Project Documentation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-2: #111827;
+    --panel: #161b22;
+    --panel-2: #1c2128;
+    --panel-3: #21262d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-2: #7ee787;
+    --accent-3: #d2a8ff;
+    --warn: #f0883e;
+    --danger: #f85149;
+    --border: #30363d;
+    --shadow: 0 6px 18px rgba(0,0,0,.5);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65;
+  }
+
+  /* Cover */
+  .cover {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 3rem;
+    background: radial-gradient(ellipse at top left, #1f6feb 0%, #161b22 50%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .cover::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(88,166,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(88,166,255,0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+  }
+  .cover-inner { position: relative; z-index: 1; max-width: 1100px; }
+  .cover .label {
+    color: var(--accent-2);
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .cover h1 {
+    margin: 0 0 1rem 0;
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .cover .subtitle {
+    color: var(--muted);
+    font-size: 1.2rem;
+    max-width: 800px;
+    margin-bottom: 2.5rem;
+  }
+  .cover .badges {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .badge {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: var(--text);
+  }
+  .badge strong { color: var(--accent); }
+
+  /* Nav */
+  nav.toc {
+    background: var(--panel);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    overflow-x: auto;
+  }
+  nav.toc ol {
+    margin: 0; padding: 0;
+    list-style: none;
+    display: flex; flex-wrap: wrap; gap: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+  }
+  nav.toc a {
+    color: var(--accent);
+    text-decoration: none;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+  }
+  nav.toc a:hover { background: var(--panel-2); }
+
+  main { max-width: 1300px; margin: 0 auto; padding: 3rem 2rem; }
+
+  section.major {
+    margin-bottom: 4rem;
+  }
+  section.major > h2 {
+    color: var(--accent);
+    font-size: 1.9rem;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  section.major > h2 .num {
+    color: var(--muted);
+    font-size: 1.2rem;
+    font-weight: 400;
+    font-family: "JetBrains Mono", monospace;
+  }
+  section.major h3 {
+    color: var(--accent-2);
+    font-size: 1.3rem;
+    margin: 2rem 0 1rem 0;
+  }
+  section.major h4 {
+    color: var(--accent-3);
+    font-size: 1.05rem;
+    margin: 1.5rem 0 0.75rem 0;
+  }
+  section.major p { color: var(--text); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: var(--shadow);
+  }
+  .card.fn-card {
+    padding: 0;
+    overflow: hidden;
+  }
+  .fn-card-header {
+    background: var(--panel-2);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .fn-card-header .name {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.15rem;
+    color: var(--accent);
+  }
+  .fn-card-header .line {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-family: monospace;
+  }
+  .fn-card-body { padding: 1.5rem; }
+  .fn-card-body p { margin-top: 0; }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 1rem;
+  }
+  @media (max-width: 1100px) { .split { grid-template-columns: 1fr; } }
+  .pane { display: flex; flex-direction: column; }
+  .pane-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+  }
+
+  pre[class*="language-"] {
+    margin: 0;
+    border-radius: 6px;
+    padding: 1rem;
+    font-size: 0.82rem;
+    background: var(--panel-2) !important;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    flex: 1;
+  }
+  code[class*="language-"] { font-size: 0.82rem; }
+  .mermaid {
+    background: var(--panel-2);
+    border-radius: 6px;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    flex: 1;
+    text-align: center;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 0.65rem 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  th { background: var(--panel-2); color: var(--accent-2); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--panel-2); }
+
+  code { font-family: "JetBrains Mono", "Courier New", monospace; }
+  p code, li code, td code {
+    background: var(--panel-3);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.88em;
+    color: var(--warn);
+  }
+
+  .endpoint {
+    background: var(--panel-2);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+  }
+  .endpoint .method {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    padding: 0.15rem 0.55rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+  }
+  .endpoint .method.post { background: #238636; }
+  .endpoint .path {
+    font-family: monospace;
+    color: var(--text);
+    font-size: 1rem;
+    margin-left: 0.5rem;
+  }
+  .endpoint .desc {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+
+  .callout {
+    margin: 1rem 0;
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+    border-left: 4px solid;
+  }
+  .callout.info     { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+  .callout.warning  { background: rgba(240,136,62,0.08);  border-color: var(--warn); }
+  .callout.success  { background: rgba(126,231,135,0.08); border-color: var(--accent-2); }
+  .callout strong { color: var(--accent-2); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+
+  .stat {
+    background: var(--panel-2);
+    padding: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .stat .value {
+    font-size: 1.8rem;
+    color: var(--accent);
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.25rem;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .stat .label {
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .page-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .page-card h4 {
+    margin-top: 0;
+    color: var(--accent-3);
+    font-family: monospace;
+    font-size: 1.05rem;
+  }
+  .page-card .badge-list {
+    display: flex; flex-wrap: wrap; gap: 0.35rem;
+    margin-top: 0.5rem;
+  }
+  .page-card .tag {
+    background: var(--panel-3);
+    color: var(--accent-2);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-family: monospace;
+  }
+
+  hr.section-div {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 2rem 0;
+  }
+
+  footer {
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  footer .links a {
+    color: var(--accent);
+    text-decoration: none;
+    margin: 0 0.5rem;
+  }
+
+  @media print {
+    nav.toc { display: none; }
+    .cover { min-height: auto; page-break-after: always; }
+    section.major { page-break-inside: avoid; }
+    .card, .fn-card { page-break-inside: avoid; }
+    pre[class*="language-"] { font-size: 0.7rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─────────────────────────── COVER ─────────────────────────── -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="label">Project Documentation</div>
+    <h1>AI Labor Market<br>Impact Simulation</h1>
+    <p class="subtitle">
+      A 20-year, country-level projection of global labor markets under three AI-adoption scenarios.
+      Combines a logistic-curve macroeconomic model with live World Bank data, a Random Forest forecaster,
+      and an LLM-generated Arabic economic advisory report.
+    </p>
+    <div class="badges">
+      <span class="badge"><strong>Backend:</strong> Python · FastAPI</span>
+      <span class="badge"><strong>Frontend:</strong> Vanilla JS · ApexCharts</span>
+      <span class="badge"><strong>ML:</strong> scikit-learn RandomForest</span>
+      <span class="badge"><strong>LLM:</strong> Ollama (local)</span>
+      <span class="badge"><strong>Data:</strong> World Bank · BLS · Frey &amp; Osborne 2013</span>
+      <span class="badge"><strong>Lines:</strong> ~1,800 (backend) · ~1,500 (frontend)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────── NAV ─────────────────────────── -->
+<nav class="toc">
+  <ol>
+    <li><a href="#sec-1">1. Executive Summary</a></li>
+    <li><a href="#sec-2">2. Architecture</a></li>
+    <li><a href="#sec-3">3. Tech Stack</a></li>
+    <li><a href="#sec-4">4. Backend: simulation.py</a></li>
+    <li><a href="#sec-5">5. Backend: forecast.py</a></li>
+    <li><a href="#sec-6">6. Backend: llm.py</a></li>
+    <li><a href="#sec-7">7. Backend: app.py (API)</a></li>
+    <li><a href="#sec-8">8. Frontend Pages</a></li>
+    <li><a href="#sec-9">9. Frontend: app.js</a></li>
+    <li><a href="#sec-10">10. Data Sources</a></li>
+    <li><a href="#sec-11">11. Validation &amp; Accuracy</a></li>
+    <li><a href="#sec-12">12. Running the Project</a></li>
+    <li><a href="#sec-13">13. Limitations</a></li>
+    <li><a href="#sec-14">14. References</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ─────────────────────────── 1. EXECUTIVE SUMMARY ─────────────────────────── -->
+<section class="major" id="sec-1">
+  <h2><span class="num">§1</span> Executive Summary</h2>
+
+  <p>
+    This project simulates the impact of AI adoption on labor markets over a 20-year horizon (2026–2046).
+    Users select a country, an AI-rollout scenario (slow/moderate/rapid), and an adoption-speed multiplier;
+    the system returns year-by-year projections of unemployment, GDP, productivity, sector composition,
+    skill-tier wages, and income inequality.
+  </p>
+
+  <div class="grid-3">
+    <div class="stat">
+      <span class="value">20</span>
+      <span class="label">Functions in simulation.py</span>
+    </div>
+    <div class="stat">
+      <span class="value">11</span>
+      <span class="label">REST API endpoints</span>
+    </div>
+    <div class="stat">
+      <span class="value">6</span>
+      <span class="label">Interactive dashboard pages</span>
+    </div>
+    <div class="stat">
+      <span class="value">30</span>
+      <span class="label">Countries supported</span>
+    </div>
+    <div class="stat">
+      <span class="value">7</span>
+      <span class="label">Live World Bank indicators</span>
+    </div>
+    <div class="stat">
+      <span class="value">1,000</span>
+      <span class="label">Monte Carlo runs per query</span>
+    </div>
+  </div>
+
+  <h3>Key features</h3>
+  <ul>
+    <li><strong>Country-level simulation</strong> — 30 World Bank country codes, with live baseline data fetched at runtime.</li>
+    <li><strong>Three scenarios</strong> — slow (3%), moderate (5%), and rapid (8%) base annual automation rates.</li>
+    <li><strong>Five skill tiers</strong> — calibrated to BLS Occupational Employment Wage Statistics (May 2024).</li>
+    <li><strong>Four sectors</strong> — Tech, Manufacturing, Healthcare, Services, with cross-sector spillover.</li>
+    <li><strong>Monte Carlo uncertainty</strong> — 1,000 simulations with parameter jitter, returns 95% confidence intervals.</li>
+    <li><strong>Sensitivity analysis</strong> — ±20% perturbation on each parameter to identify high-leverage inputs.</li>
+    <li><strong>Historical backtest</strong> — model is validated against World Bank unemployment data 2000–2020.</li>
+    <li><strong>Random Forest forecaster</strong> — independent ML projection trained on 2000–2024 unemployment.</li>
+    <li><strong>AI-generated advisory report</strong> — Arabic economic commentary via Ollama (local LLM).</li>
+    <li><strong>Frey &amp; Osborne 2013 integration</strong> — 50+ occupations' automation probabilities, sourced from Oxford Martin School.</li>
+  </ul>
+
+  <div class="callout info">
+    <strong>Companion documents</strong> in this repository:
+    <ul style="margin: 0.5rem 0 0 0;">
+      <li><code>SIMULATION_EXPLAINED.md</code> — line-by-line prose walkthrough of <code>simulation.py</code></li>
+      <li><code>KEYWORDS_GLOSSARY.md</code> — decodes every variable name, World Bank code, and acronym</li>
+      <li><code>ARCHITECTURE_DIAGRAMS.html</code> — 9 system-level Mermaid diagrams</li>
+      <li><code>CODE_TOUR.html</code> — function-by-function visual code tour with worked examples</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─────────────────────────── 2. ARCHITECTURE ─────────────────────────── -->
+<section class="major" id="sec-2">
+  <h2><span class="num">§2</span> System Architecture</h2>
+
+  <h3>2.1 High-level view</h3>
+  <p>
+    A three-tier architecture: vanilla-JavaScript single-page dashboards communicate with a FastAPI backend over JSON.
+    The backend integrates three external data sources — the World Bank Open Data API, a local Ollama LLM, and the
+    Frey &amp; Osborne CSV dataset.
+  </p>
+
+  <div class="mermaid">
+flowchart TB
+    subgraph Frontend["🌐 Frontend (Browser, port 5500)"]
+        IDX[index.html<br/>Overview]
+        SCN[scenarios.html<br/>3-way compare]
+        MAC[macroeconomy.html<br/>GDP / wages / Gini]
+        SEC[sector.html<br/>per-sector view]
+        AI[ai_impact.html<br/>S-curve · Oxford risk]
+        VAL[validation.html<br/>backtest · MC · LLM]
+        JS[app.js<br/>shared API + charts]
+    end
+
+    subgraph Backend["🐍 FastAPI Backend (port 8000)"]
+        APP[app.py<br/>11 endpoints]
+        SIM[simulation.py<br/>core engine, 20 fns]
+        FOR[forecast.py<br/>RandomForest ML]
+        LLM[llm.py<br/>Ollama wrapper]
+        DATA[(data/<br/>frey_osborne.csv)]
+    end
+
+    subgraph External["☁️ External Services"]
+        WB[World Bank Open Data API<br/>data.worldbank.org]
+        OLM[Ollama Local LLM<br/>localhost:11434]
+    end
+
+    IDX & SCN & MAC & SEC & AI & VAL -.use.-> JS
+    JS ==HTTP/JSON==> APP
+    APP --imports--> SIM
+    APP --imports--> FOR
+    APP --imports--> LLM
+    APP --reads--> DATA
+    SIM ==HTTPS GET==> WB
+    FOR -.uses.-> SIM
+    LLM ==HTTP POST==> OLM
+    style SIM fill:#1f6feb,color:#fff,stroke:#58a6ff,stroke-width:3px
+    style APP fill:#238636,color:#fff
+    style WB fill:#8957e5,color:#fff
+    style OLM fill:#8957e5,color:#fff
+  </div>
+
+  <h3>2.2 Request lifecycle (typical user interaction)</h3>
+  <div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant B as Browser
+    participant F as FastAPI
+    participant S as simulation.py
+    participant WB as World Bank API
+
+    U->>B: Clicks "Run Simulation" on scenarios.html
+    B->>F: GET /api/simulate/moderate?country=USA
+    F->>S: run_scenario("moderate", country="USA")
+    S->>WB: GET /indicator/SL.TLF.TOTL.IN/USA
+    WB-->>S: 167,000,000
+    S->>WB: GET /indicator/NY.GDP.MKTP.CD/USA
+    WB-->>S: 27,360,000,000,000
+    Note over S: Cache baseline,<br/>run 20-year loop
+    S-->>F: results dict (years, gdp, unem, sectors...)
+    F-->>B: JSON response
+    B->>U: Renders charts via ApexCharts
+  </div>
+
+  <h3>2.3 Project file structure</h3>
+<pre><code class="language-bash">MODEL-SIMULATION-CLEAN/
+├── README.md
+├── requirements.txt              # Python dependencies
+├── test_smoke.py                 # End-to-end smoke test
+│
+├── backend/
+│   ├── __init__.py
+│   ├── app.py                    # FastAPI app + 11 endpoints
+│   ├── simulation.py             # Core engine (20 functions, 481 lines)
+│   ├── forecast.py               # RandomForest unemployment forecaster
+│   ├── llm.py                    # Ollama-driven Arabic advisory report
+│   └── data/
+│       └── frey_osborne.csv      # Curated 50+ occupations
+│
+├── frontend/
+│   ├── style.css                 # Shared dashboard styles
+│   ├── app.js                    # Shared API + chart helpers
+│   ├── index.html                # Overview dashboard
+│   ├── scenarios.html            # Compare slow/moderate/rapid
+│   ├── macroeconomy.html         # GDP · wages · Gini · spending
+│   ├── sector.html               # Per-sector breakdown
+│   ├── ai_impact.html            # S-curve · productivity · Oxford
+│   └── validation.html           # Backtest · Monte Carlo · LLM report
+│
+└── (companion docs)
+    ├── SIMULATION_EXPLAINED.md
+    ├── KEYWORDS_GLOSSARY.md
+    ├── ARCHITECTURE_DIAGRAMS.html
+    ├── CODE_TOUR.html
+    └── PROJECT_DOCUMENTATION.html  ← this file</code></pre>
+</section>
+
+<!-- ─────────────────────────── 3. TECH STACK ─────────────────────────── -->
+<section class="major" id="sec-3">
+  <h2><span class="num">§3</span> Technology Stack</h2>
+
+  <h3>3.1 Backend dependencies (<code>requirements.txt</code>)</h3>
+  <table>
+    <thead><tr><th>Package</th><th>Version</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>fastapi</code></td><td>0.111.0</td><td>HTTP API framework</td></tr>
+      <tr><td><code>uvicorn[standard]</code></td><td>0.29.0</td><td>ASGI server for FastAPI</td></tr>
+      <tr><td><code>scikit-learn</code></td><td>≥1.5.0</td><td>RandomForestRegressor (forecasting)</td></tr>
+      <tr><td><code>pandas</code></td><td>≥2.2.0</td><td>DataFrames, CSV I/O</td></tr>
+      <tr><td><code>numpy</code></td><td>≥2.0.0</td><td>Vectorized math, Monte Carlo arrays</td></tr>
+      <tr><td><code>requests</code></td><td>≥2.31.0</td><td>HTTPS calls to World Bank &amp; Ollama</td></tr>
+      <tr><td><code>python-multipart</code></td><td>≥0.0.9</td><td>FastAPI form/body parsing</td></tr>
+      <tr><td><code>httpx</code></td><td>≥0.27.0</td><td>Async HTTP client (reserved)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.2 Frontend libraries (loaded via CDN)</h3>
+  <table>
+    <thead><tr><th>Library</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>ApexCharts</code></td><td>Line / area / bar / donut / range-area charts</td></tr>
+      <tr><td>Native <code>fetch</code> + ES6</td><td>No framework — pure vanilla JS</td></tr>
+      <tr><td>Inter font (Google Fonts)</td><td>UI typography</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.3 External services</h3>
+  <table>
+    <thead><tr><th>Service</th><th>Endpoint</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>World Bank Open Data</td><td><code>api.worldbank.org/v2/</code></td><td>Live country baselines (free, no key)</td></tr>
+      <tr><td>Ollama (local LLM)</td><td><code>localhost:11434</code></td><td>Arabic advisory report generation</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ─────────────────────────── 4. SIMULATION.PY ─────────────────────────── -->
+<section class="major" id="sec-4">
+  <h2><span class="num">§4</span> Backend: <code>simulation.py</code> — Core Engine</h2>
+
+  <p>
+    The heart of the project. Contains 20 functions across 481 lines, organized into 5 sections:
+    constants, World Bank data fetchers, core math, derived breakdowns, scenario runners, validation, and outputs.
+    A detailed function-by-function tour with worked examples is available in
+    <a href="CODE_TOUR.html"><code>CODE_TOUR.html</code></a>.
+  </p>
+
+  <h3>4.1 Module structure</h3>
+  <div class="mermaid">
+flowchart TD
+    subgraph Entry["Public entry points"]
+        RS[run_scenario]
+        CS[compare_scenarios]
+        MC[monte_carlo]
+        SN[sensitivity]
+        VL[validate]
+    end
+    subgraph Core["Core math"]
+        IS[initial_state]
+        SY[step_year]
+        AA[ai_adoption]
+    end
+    subgraph Brk["Per-year breakdowns"]
+        SKB[skill_breakdown]
+        SCB[sector_breakdown]
+        WS[wages_by_skill]
+        GI[gini_index]
+    end
+    subgraph WBD["World Bank data"]
+        GCB[get_country_baseline]
+        FWB[fetch_world_bank_baseline]
+        FWS[fetch_world_bank_sectors]
+        WBL[_wb_latest]
+    end
+    subgraph Out["Outputs"]
+        SUM[summarize]
+        REP[report]
+        ECSV[export_csv]
+    end
+    CS --> RS
+    SN --> RS
+    RS --> IS & SY & SKB & SCB & WS & GI & SUM & REP
+    MC --> IS & SY
+    SY --> AA
+    IS --> GCB
+    SCB --> GCB
+    GCB --> FWB & FWS
+    FWB & FWS --> WBL
+    VL --> AA
+    style RS fill:#1f6feb,color:#fff,stroke:#58a6ff,stroke-width:3px
+    style SY fill:#1f6feb,color:#fff,stroke:#58a6ff,stroke-width:3px
+    style AA fill:#1f6feb,color:#fff,stroke:#58a6ff,stroke-width:3px
+  </div>
+
+  <h3>4.2 Key functions — code + flow</h3>
+
+  <!-- ai_adoption -->
+  <div class="card fn-card">
+    <div class="fn-card-header">
+      <span class="name">ai_adoption(year_index, speed)</span>
+      <span class="line">lines 158–161 · the S-curve driver</span>
+    </div>
+    <div class="fn-card-body">
+      <p>Logistic S-curve. Returns AI adoption as a fraction from 0 to 1. Midpoint at year 10, controlled by <code>speed</code>.</p>
+      <div class="split">
+        <div class="pane">
+          <div class="pane-label">Code</div>
+<pre><code class="language-python">def ai_adoption(year_index: int, speed: float = 1.0) -> float:
+    """Logistic S-curve, midpoint at year 10, returns 0..1."""
+    k = 0.35 * speed
+    return 1.0 / (1.0 + np.exp(-k * (year_index - 10.0)))</code></pre>
+        </div>
+        <div class="pane">
+          <div class="pane-label">Logic flow</div>
+          <div class="mermaid">
+flowchart TD
+    A[year_index, speed] --> B["k = 0.35 × speed"]
+    B --> C["Compute logistic:<br/>1/(1 + e^(-k(year-10)))"]
+    C --> D[Return 0..1]
+    style D fill:#238636,color:#fff
+          </div>
+        </div>
+      </div>
+      <p style="margin-top: 1rem;"><strong>Output values (speed=1.0):</strong> year 0 → 3%, year 5 → 15%, year 10 → 50%, year 15 → 85%, year 20 → 97%.</p>
+    </div>
+  </div>
+
+  <!-- step_year -->
+  <div class="card fn-card">
+    <div class="fn-card-header">
+      <span class="name">step_year(state, year_index, auto_rate, speed)</span>
+      <span class="line">lines 175–192 · the yearly engine</span>
+    </div>
+    <div class="fn-card-body">
+      <p>Advances the macro state by one year. Updates adoption, jobs, workforce, and computes unemployment, productivity, GDP, and consumer spending.</p>
+      <div class="split">
+        <div class="pane">
+          <div class="pane-label">Code</div>
+<pre><code class="language-python">def step_year(state, year_index, auto_rate, speed):
+    state["ai_adoption"] = ai_adoption(year_index, speed)
+    adoption = state["ai_adoption"]
+
+    jobs_lost    = state["total_jobs"] * auto_rate * adoption
+    jobs_created = state["total_jobs"] * auto_rate * adoption * JOB_CREATION_RATIO
+    state["total_jobs"] = max(0.0, state["total_jobs"] - jobs_lost + jobs_created)
+    state["workforce"] *= (1.0 + WORKFORCE_GROWTH)
+
+    gdp_base    = state.get("_gdp_base", INITIAL_GDP)
+    unem        = max(0.0, (state["workforce"] - state["total_jobs"]) / state["workforce"])
+    productivity= 1.0 + (adoption ** 0.7) * 0.85
+    gdp         = gdp_base * (1.0 + (productivity - 1.0) * 0.6 - unem * 0.4)
+    spending    = gdp * max(0.30, 0.68 - unem * 1.2)
+
+    return {"unem": unem, "productivity": productivity,
+            "gdp": gdp, "spending": spending}</code></pre>
+        </div>
+        <div class="pane">
+          <div class="pane-label">Logic flow</div>
+          <div class="mermaid">
+flowchart TD
+    A[state, year, auto_rate, speed] --> B["Update adoption<br/>via ai_adoption"]
+    B --> C["jobs_lost = jobs × rate × adoption"]
+    C --> D["jobs_created = lost × 0.60"]
+    D --> E["Update total_jobs<br/>(net change)"]
+    E --> F["Grow workforce × 1.008"]
+    F --> G["Compute unem,<br/>productivity, gdp, spending"]
+    G --> H[Return metrics dict]
+    style H fill:#238636,color:#fff
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- run_scenario -->
+  <div class="card fn-card">
+    <div class="fn-card-header">
+      <span class="name">run_scenario(scenario, horizon, adoption_speed, override_rate, country)</span>
+      <span class="line">lines 250–299 · the orchestrator</span>
+    </div>
+    <div class="fn-card-body">
+      <p>The main entry point. Runs a full N-year simulation calling all the breakdown functions each year.
+         Returns a JSON-ready dict with year arrays for unemployment, GDP, jobs, adoption, Gini, skills, wages, and sectors.</p>
+      <div class="mermaid">
+sequenceDiagram
+    participant U as Caller
+    participant RS as run_scenario
+    participant Init as initial_state
+    participant SY as step_year
+    participant Br as Breakdowns
+
+    U->>RS: run_scenario("moderate", 20, country="USA")
+    RS->>Init: build state from country baseline
+    Init-->>RS: {total_jobs, workforce, ...}
+    loop For each year i in 0..19
+        RS->>SY: step_year(state, i, rate, speed)
+        SY-->>RS: {unem, gdp, productivity, spending}
+        RS->>Br: skill_breakdown, sector_breakdown,<br/>wages_by_skill, gini_index
+        Br-->>RS: per-year dicts
+        Note over RS: append all values to results arrays
+    end
+    RS->>RS: summarize + report
+    RS-->>U: JSON-ready results dict
+      </div>
+    </div>
+  </div>
+
+  <h3>4.3 Complete function inventory</h3>
+  <table>
+    <thead><tr><th>#</th><th>Function</th><th>Lines</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>_wb_latest</code></td><td>75–87</td><td>Fetch most-recent value from a World Bank indicator</td></tr>
+      <tr><td>2</td><td><code>fetch_world_bank_baseline</code></td><td>90–112</td><td>Country baseline: employment, labor force, GDP</td></tr>
+      <tr><td>3</td><td><code>fetch_world_bank_sectors</code></td><td>115–141</td><td>Sector shares: 3 WB buckets → 4 model categories</td></tr>
+      <tr><td>4</td><td><code>get_country_baseline</code></td><td>144–151</td><td>Cached wrapper around the two fetchers</td></tr>
+      <tr><td>5</td><td><code>ai_adoption</code></td><td>158–161</td><td>Logistic S-curve, midpoint year 10</td></tr>
+      <tr><td>6</td><td><code>initial_state</code></td><td>164–172</td><td>Build the starting <code>state</code> dict</td></tr>
+      <tr><td>7</td><td><code>step_year</code></td><td>175–192</td><td>Advance macro state by one year</td></tr>
+      <tr><td>8</td><td><code>skill_breakdown</code></td><td>204–205</td><td>Workforce split across 5 skill tiers</td></tr>
+      <tr><td>9</td><td><code>wages_by_skill</code></td><td>208–210</td><td>Per-tier wages at current adoption level</td></tr>
+      <tr><td>10</td><td><code>sector_breakdown</code></td><td>213–230</td><td>Jobs per sector + automation + Tech spillover</td></tr>
+      <tr><td>11</td><td><code>gini_index</code></td><td>233–243</td><td>Income inequality coefficient (0–1)</td></tr>
+      <tr><td>12</td><td><code>run_scenario</code></td><td>250–299</td><td>Full N-year simulation orchestrator</td></tr>
+      <tr><td>13</td><td><code>compare_scenarios</code></td><td>302–305</td><td>Run slow + moderate + rapid in one call</td></tr>
+      <tr><td>14</td><td><code>monte_carlo</code></td><td>308–339</td><td>1000 random futures, 95% CI bands</td></tr>
+      <tr><td>15</td><td><code>sensitivity</code></td><td>342–368</td><td>±20% parameter perturbation impact</td></tr>
+      <tr><td>16</td><td><code>fetch_world_bank_unemployment</code></td><td>382–399</td><td>Multi-year unemployment time series</td></tr>
+      <tr><td>17</td><td><code>validate</code></td><td>402–429</td><td>Backtest vs. real 2000–2020 data</td></tr>
+      <tr><td>18</td><td><code>summarize</code></td><td>436–447</td><td>Mean/std/min/max for each metric</td></tr>
+      <tr><td>19</td><td><code>report</code></td><td>450–463</td><td>Headline final-year values</td></tr>
+      <tr><td>20</td><td><code>export_csv</code></td><td>466–481</td><td>Save results to CSV via pandas</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ─────────────────────────── 5. FORECAST.PY ─────────────────────────── -->
+<section class="major" id="sec-5">
+  <h2><span class="num">§5</span> Backend: <code>forecast.py</code> — Random Forest Forecaster</h2>
+
+  <p>
+    Independent machine-learning baseline. Trains a Random Forest Regressor on World Bank global unemployment
+    (2000–2024) and projects forward year by year, feeding each prediction back as a lagged feature.
+    Serves as a sanity-check counterpart to the macroeconomic model.
+  </p>
+
+  <h3>5.1 Feature engineering</h3>
+  <p>Six features per year:</p>
+  <table>
+    <thead><tr><th>Feature</th><th>Formula</th><th>What it captures</th></tr></thead>
+    <tbody>
+      <tr><td><code>trend</code></td><td><code>year − min_year</code></td><td>Long-run linear trend (years since 2000)</td></tr>
+      <tr><td><code>lag1</code></td><td><code>unem(t−1)</code></td><td>Last year's unemployment (autoregressive)</td></tr>
+      <tr><td><code>lag2</code></td><td><code>unem(t−2)</code></td><td>Two years ago</td></tr>
+      <tr><td><code>lag3</code></td><td><code>unem(t−3)</code></td><td>Three years ago</td></tr>
+      <tr><td><code>rolling3</code></td><td><code>mean of last 3 years</code></td><td>Smoothed local level</td></tr>
+      <tr><td><code>ai_proxy</code></td><td><code>max(0, (year−2015)²/100)</code></td><td>Quadratic "AI era" intensity ramp</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5.2 Functions</h3>
+
+  <div class="card fn-card">
+    <div class="fn-card-header">
+      <span class="name">_build_features(years, values)</span>
+      <span class="line">lines 23–31</span>
+    </div>
+    <div class="fn-card-body">
+      <p>Constructs the feature DataFrame from raw time series. Drops the first 3 rows that have NaN lags.</p>
+      <div class="split">
+        <div class="pane">
+          <div class="pane-label">Code</div>
+<pre><code class="language-python">def _build_features(years, values) -> pd.DataFrame:
+    df = pd.DataFrame({"year": years, "unemployment_rate": values}) \
+           .sort_values("year").reset_index(drop=True)
+    df["lag1"]     = df["unemployment_rate"].shift(1)
+    df["lag2"]     = df["unemployment_rate"].shift(2)
+    df["lag3"]     = df["unemployment_rate"].shift(3)
+    df["trend"]    = df["year"] - df["year"].min()
+    df["rolling3"] = df["unemployment_rate"].rolling(3).mean()
+    df["ai_proxy"] = df["year"].apply(lambda y: max(0.0, (y - 2015) ** 2 / 100.0))
+    return df.dropna().reset_index(drop=True)</code></pre>
+        </div>
+        <div class="pane">
+          <div class="pane-label">Logic flow</div>
+          <div class="mermaid">
+flowchart TD
+    A[years, values] --> B[Build DataFrame<br/>sorted by year]
+    B --> C[Add 3 lag columns:<br/>lag1, lag2, lag3]
+    C --> D[Add trend column]
+    D --> E[Add rolling3 mean]
+    E --> F["Add ai_proxy:<br/>quadratic ramp from 2015"]
+    F --> G[Drop NaN rows<br/>first 3 years]
+    G --> H[Return DataFrame]
+    style H fill:#238636,color:#fff
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fn-card">
+    <div class="fn-card-header">
+      <span class="name">train()</span>
+      <span class="line">lines 34–60</span>
+    </div>
+    <div class="fn-card-body">
+      <p>Pulls 25 years of WB unemployment data, builds features, trains a Random Forest, and returns the fitted model along with its mean absolute error.</p>
+      <div class="split">
+        <div class="pane">
+          <div class="pane-label">Code</div>
+<pre><code class="language-python">def train() -> Dict[str, Any]:
+    raw = fetch_world_bank_unemployment(2000, 2024)
+    df  = _build_features(raw["years"], raw["values"])
+
+    X = df[FEATURE_COLS].values
+    y = df["unemployment_rate"].values
+
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    model = RandomForestRegressor(
+        n_estimators=200, max_depth=8,
+        min_samples_leaf=2, random_state=42, n_jobs=-1,
+    )
+    model.fit(X_scaled, y)
+    mae = mean_absolute_error(y, model.predict(X_scaled))
+
+    return {"model": model, "scaler": scaler,
+            "mae": mae, "accuracy": 100 - mae * 10,
+            "base_year": int(df["year"].min())}</code></pre>
+        </div>
+        <div class="pane">
+          <div class="pane-label">Logic flow</div>
+          <div class="mermaid">
+flowchart TD
+    A[Start] --> B[Fetch WB data<br/>2000–2024]
+    B --> C[Build features]
+    C --> D[StandardScaler<br/>fit_transform]
+    D --> E["RandomForestRegressor<br/>n_estimators=200<br/>max_depth=8<br/>seed=42"]
+    E --> F[Compute MAE on<br/>training set]
+    F --> G[Return model + scaler<br/>+ accuracy metric]
+    style G fill:#238636,color:#fff
+          </div>
+        </div>
+      </div>
+      <div class="callout warning" style="margin-top: 1rem;">
+        <strong>Note:</strong> MAE here is in-sample (training error). A proper validation would use a held-out test set
+        or time-series cross-validation. The model is small (25 rows × 6 features) so overfitting risk exists despite the regularization.
+      </div>
+    </div>
+  </div>
+
+  <div class="card fn-card">
+    <div class="fn-card-header">
+      <span class="name">forecast_unemployment(start, end)</span>
+      <span class="line">lines 63–94</span>
+    </div>
+    <div class="fn-card-body">
+      <p>Generates an autoregressive forecast: each year's prediction becomes a lag feature for the next year.
+         This is the function called by the <code>/api/simulate</code> endpoint to attach an ML-based comparison line to every simulation.</p>
+      <div class="split">
+        <div class="pane">
+          <div class="pane-label">Code (abridged)</div>
+<pre><code class="language-python">def forecast_unemployment(start=2025, end=2044):
+    trained = train()
+    model, scaler = trained["model"], trained["scaler"]
+    raw = fetch_world_bank_unemployment(2000, 2024)
+    history = list(raw["values"][-5:])
+    base_year = trained["base_year"]
+
+    years, predicted = list(range(start, end + 1)), []
+    for year in years:
+        lag1 = history[-1]; lag2 = history[-2]; lag3 = history[-3]
+        rolling3 = np.mean(history[-3:])
+        feats = np.array([[year - base_year, lag1, lag2, lag3, rolling3,
+                            max(0, (year-2015)**2 / 100)]])
+        pred = float(model.predict(scaler.transform(feats))[0])
+        pred = round(max(0.0, pred), 3)
+        predicted.append(pred)
+        history.append(pred)  # autoregressive feedback
+
+    importances = {col: float(v) for col, v in zip(FEATURE_COLS, model.feature_importances_)}
+    return {"years": years, "predicted_unemployment": predicted,
+            "model_accuracy": trained["accuracy"],
+            "model_mae": trained["mae"],
+            "feature_importances": importances}</code></pre>
+        </div>
+        <div class="pane">
+          <div class="pane-label">Logic flow</div>
+          <div class="mermaid">
+flowchart TD
+    A[Start, end years] --> B[Train RF model]
+    B --> C[Seed history with last 5 actual values]
+    C --> D[For each forecast year]
+    D --> E["Build lag features<br/>from history tail"]
+    E --> F[Scale features]
+    F --> G[Model predicts unem]
+    G --> H[Append to predicted list<br/>AND history list]
+    H -->|next year| D
+    H --> I[Compute feature importances]
+    I --> J[Return forecast dict]
+    style J fill:#238636,color:#fff
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── 6. LLM.PY ─────────────────────────── -->
+<section class="major" id="sec-6">
+  <h2><span class="num">§6</span> Backend: <code>llm.py</code> — AI Advisory Report (Arabic)</h2>
+
+  <p>
+    Generates a 6-section economic advisory report in formal Modern Standard Arabic, using a local Ollama LLM.
+    Designed for the project's Arabic-speaking audience. Default model is <code>kimi-k2.6:cloud</code> (1T params,
+    cloud-routed via Ollama), with automatic fallback to <code>qwen3.5:9b</code> (fully local).
+  </p>
+
+  <h3>6.1 The system prompt</h3>
+  <p>
+    The LLM is given a strict role: "Chief Economic Advisor at the International Labour Organization, specializing in
+    AI's impact on labor markets." Rules include: write only in Arabic, stick to the provided numbers (no
+    hallucination), use a critical and objective tone, and follow a fixed 6-section structure
+    (Executive Summary → Labor Market Analysis → Macroeconomic Analysis → Future Scenarios &amp; Risks → Policy
+    Recommendations → Conclusion).
+  </p>
+
+  <h3>6.2 Functions</h3>
+
+  <div class="card fn-card">
+    <div class="fn-card-header">
+      <span class="name">_format_simulation_summary(results)</span>
+      <span class="line">lines 47–104</span>
+    </div>
+    <div class="fn-card-body">
+      <p>
+        Compresses a 20-year simulation result into a dense English summary that fits in the LLM's context window.
+        The LLM reads this summary in its user message, then generates Arabic prose grounded in those exact numbers.
+      </p>
+      <div class="split">
+        <div class="pane">
+          <div class="pane-label">Code (abridged)</div>
+<pre><code class="language-python">def _format_simulation_summary(results: Dict[str, Any]) -> str:
+    summary, report = results.get("summary", {}), results.get("report", {})
+    unem, gdp     = results.get("unemployment", []), results.get("gdp", [])
+    wages, sectors = results.get("wages", {}), results.get("sectors", {})
+
+    unem_start, unem_end = unem[0], unem[-1]
+    unem_peak = max(unem)
+    gdp_growth = (gdp[-1] - gdp[0]) / gdp[0] * 100
+
+    wl_start, wl_end = wages["L1_basic"][0],  wages["L1_basic"][-1]
+    wh_start, wh_end = wages["L5_expert"][0], wages["L5_expert"][-1]
+
+    lines = [
+        f"SCENARIO: {results['scenario'].upper()}",
+        f"HORIZON: {report['start_year']} – {report['end_year']}",
+        f"AUTOMATION RATE: {report['automation_rate']*100:.1f}% per year",
+        "",
+        "── LABOR MARKET ──",
+        f"Unemployment: {unem_start:.2f}% → {unem_end:.2f}%",
+        f"Peak unemployment: {unem_peak:.2f}%",
+        "── MACROECONOMY ──",
+        f"GDP: ${gdp[0]:.2f}T → ${gdp[-1]:.2f}T  ({gdp_growth:+.1f}%)",
+        f"Gini Index: {report['final_gini']:.4f}",
+        "── WAGE GAP ──",
+        f"Lowest-skill:  ${wl_start:,.0f} → ${wl_end:,.0f}",
+        f"Highest-skill: ${wh_start:,.0f} → ${wh_end:,.0f}",
+        ...
+    ]
+    return "\n".join(lines)</code></pre>
+        </div>
+        <div class="pane">
+          <div class="pane-label">Logic flow</div>
+          <div class="mermaid">
+flowchart TD
+    A[results dict] --> B[Extract key metrics:<br/>unem, gdp, wages, sectors]
+    B --> C[Compute deltas:<br/>start vs end, peak,<br/>growth %, wage ratio]
+    C --> D[Build text lines:<br/>scenario header +<br/>labor + macro + wages<br/>+ sectors + stats]
+    D --> E[Join with newlines]
+    E --> F[Return ~30-line<br/>dense English summary]
+    style F fill:#238636,color:#fff
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fn-card">
+    <div class="fn-card-header">
+      <span class="name">analyze_with_local_llm(results, model)</span>
+      <span class="line">lines 125–166</span>
+    </div>
+    <div class="fn-card-body">
+      <p>Main entry point. Builds the user message, calls Ollama, handles fallback if the primary model is unavailable, and returns the Arabic report with token counts and generation time.</p>
+      <div class="split">
+        <div class="pane">
+          <div class="pane-label">Code (abridged)</div>
+<pre><code class="language-python">def analyze_with_local_llm(results, model=None):
+    chosen = model or DEFAULT_MODEL  # kimi-k2.6:cloud
+    summary_text = _format_simulation_summary(results)
+    user_message = (
+        "فيما يلي نتائج المحاكاة...\n\n"
+        f"```\n{summary_text}\n```\n\n"
+        "يرجى تقديم التقرير الاستشاري..."
+    )
+
+    try:
+        data = _call_ollama(chosen, user_message)
+    except requests.exceptions.RequestException as e:
+        if chosen != FALLBACK_MODEL:
+            data = _call_ollama(FALLBACK_MODEL, user_message)
+            chosen = FALLBACK_MODEL + " (fallback)"
+        else:
+            return {"success": False, ...}
+
+    msg = data.get("message", {})
+    return {
+        "success": True,
+        "report": msg.get("content", "").strip(),
+        "model": chosen,
+        "input_tokens":  data.get("prompt_eval_count", 0),
+        "output_tokens": data.get("eval_count", 0),
+        "duration_sec":  round(data["total_duration"] / 1e9, 2),
+    }</code></pre>
+        </div>
+        <div class="pane">
+          <div class="pane-label">Logic flow</div>
+          <div class="mermaid">
+flowchart TD
+    A[results, model] --> B[Format dense summary]
+    B --> C[Build Arabic user message<br/>with embedded summary]
+    C --> D{Call Ollama<br/>primary model}
+    D -->|Success| E[Extract report content]
+    D -->|Network error| F{Already on<br/>fallback?}
+    F -->|No| G[Retry with qwen3.5:9b]
+    F -->|Yes| H[Return error dict]
+    G -->|Success| E
+    G -->|Fail| H
+    E --> I["Return: report,<br/>model, tokens, duration"]
+    style I fill:#238636,color:#fff
+    style H fill:#f85149,color:#fff
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fn-card">
+    <div class="fn-card-header">
+      <span class="name">list_available_models()</span>
+      <span class="line">lines 169–183</span>
+    </div>
+    <div class="fn-card-body">
+      <p>Queries Ollama's <code>/api/tags</code> endpoint to list installed models, with sizes. Used by the frontend dropdown.</p>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <strong>Configurable via environment variables:</strong>
+    <ul style="margin: 0.5rem 0 0 0;">
+      <li><code>OLLAMA_HOST</code> — defaults to <code>http://localhost:11434</code></li>
+      <li><code>OLLAMA_MODEL</code> — defaults to <code>kimi-k2.6:cloud</code></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─────────────────────────── 7. APP.PY (API) ─────────────────────────── -->
+<section class="major" id="sec-7">
+  <h2><span class="num">§7</span> Backend: <code>app.py</code> — REST API Surface</h2>
+
+  <p>
+    FastAPI application exposing 11 HTTP endpoints. All endpoints return JSON. CORS is enabled for all origins
+    so the frontend can run from a separate static file server.
+  </p>
+
+  <h3>7.1 Endpoint reference</h3>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/</span>
+    <div class="desc">Health check. Returns API title and version.</div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/simulate/{scenario}</span>
+    <div class="desc">
+      Run a full N-year simulation. Path param <code>scenario</code> ∈ {<code>slow</code>, <code>moderate</code>, <code>rapid</code>}.
+      Query params: <code>horizon</code> (default 20), <code>adoption_speed</code> (default 1.0), <code>country</code> (default WLD), <code>export</code> (CSV flag).
+      Also attaches the RandomForest <code>ml_forecast</code> for comparison.
+    </div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/compare</span>
+    <div class="desc">Run all 3 scenarios at once. Used by the side-by-side comparison page.</div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/baseline</span>
+    <div class="desc">Show the live baseline (employment, workforce, GDP, sector splits) for a country.</div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/countries</span>
+    <div class="desc">Returns the 30 supported countries for the frontend dropdown.</div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/monte-carlo</span>
+    <div class="desc">
+      Run N Monte Carlo simulations (clamped 100–5000, default 1000) with randomized parameters.
+      Returns mean and 95% confidence band for unemployment and GDP.
+    </div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/sensitivity</span>
+    <div class="desc">±20% perturbation analysis on automation_rate and adoption_speed. Reports impact on final-year unemployment.</div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/validate</span>
+    <div class="desc">Backtest model against 2000–2020 World Bank unemployment data. Returns MAE and accuracy score.</div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method post">POST</span><span class="path">/api/analyze</span>
+    <div class="desc">
+      Body: <code>{scenario, horizon, adoption_speed, country, model}</code>.
+      Runs a simulation, then generates an Arabic economic advisory report via Ollama.
+      Returns the LLM-generated text, token counts, and generation time.
+    </div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/models</span>
+    <div class="desc">List Ollama models installed locally. Used by the validation page's model picker.</div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/oxford-risk</span>
+    <div class="desc">10-category automation-risk reference (Frey &amp; Osborne 2013, condensed).</div>
+  </div>
+
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/oxford-full</span>
+    <div class="desc">
+      Curated subset of Frey &amp; Osborne 2013 Appendix A — ~50 occupations across the full
+      probability spectrum, with SOC codes and ranks.
+    </div>
+  </div>
+
+  <h3>7.2 Example request / response</h3>
+<pre><code class="language-bash">$ curl http://localhost:8000/api/simulate/moderate?country=USA&horizon=20</code></pre>
+<pre><code class="language-javascript">{
+  "scenario": "moderate",
+  "country": "USA",
+  "automation_rate": 0.05,
+  "years": [2026, 2027, ..., 2045],
+  "unemployment": [5.4, 5.6, 6.1, 7.0, 8.4, ...],
+  "gdp": [27.4, 28.9, 30.7, 32.8, ...],
+  "total_jobs": [161000000, 159800000, ...],
+  "ai_adoption": [3.0, 4.2, 5.9, ...],
+  "gini": [0.41, 0.42, 0.43, ...],
+  "productivity": [1.02, 1.05, 1.09, ...],
+  "consumer_spending": [18.6, 19.4, ...],
+  "skills":  { "L1_basic": [...], "L2_semi": [...], ... },
+  "wages":   { "L1_basic": [33000, 32500, ...], ... },
+  "sectors": { "Tech": [...], "Manufacturing": [...], ... },
+  "summary": { "unemployment": {"mean":..., "std":...}, ... },
+  "report":  { "final_unemployment_pct": 9.8, ... },
+  "ml_forecast": {
+    "years": [2025, ...],
+    "predicted_unemployment": [...],
+    "model_accuracy": 96.4,
+    "feature_importances": { "lag1": 0.61, "trend": 0.18, ... }
+  }
+}</code></pre>
+</section>
+
+<!-- ─────────────────────────── 8. FRONTEND PAGES ─────────────────────────── -->
+<section class="major" id="sec-8">
+  <h2><span class="num">§8</span> Frontend: The Six Dashboard Pages</h2>
+
+  <p>
+    All pages share a common sidebar with simulation controls (scenario, horizon, adoption speed, country).
+    State is held in <code>window.SIM</code> and persists across pages. Charts use ApexCharts; no build step or framework.
+  </p>
+
+  <div class="grid-2">
+    <div class="page-card">
+      <h4>index.html — Overview</h4>
+      <p>Landing dashboard with the headline KPIs (final unemployment, GDP, jobs, AI adoption) and one summary chart.
+         Hits <code>/api/baseline</code> + <code>/api/simulate/moderate</code> on load.</p>
+      <div class="badge-list">
+        <span class="tag">KPI cards</span><span class="tag">Summary chart</span><span class="tag">Country picker</span>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <h4>scenarios.html — Three-way Compare</h4>
+      <p>Runs all 3 scenarios (slow/moderate/rapid) via <code>/api/compare</code> and overlays them on one chart
+         per metric (unemployment, GDP, jobs, adoption). Lets the user see how the rollout speed changes outcomes.</p>
+      <div class="badge-list">
+        <span class="tag">/api/compare</span><span class="tag">4 line charts</span><span class="tag">Scenario overlay</span>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <h4>macroeconomy.html — Economic deep-dive</h4>
+      <p>GDP trajectory, consumer spending, productivity, Gini coefficient over time, and a wage gap chart
+         showing L1 vs L5 divergence. Pulls a single simulation result.</p>
+      <div class="badge-list">
+        <span class="tag">Area charts</span><span class="tag">Wage gap</span><span class="tag">Gini timeline</span>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <h4>sector.html — Per-sector view</h4>
+      <p>Donut showing final-year sector distribution + line chart of each sector's job count over time.
+         Highlights Tech-spillover impact on Services / Manufacturing / Healthcare.</p>
+      <div class="badge-list">
+        <span class="tag">Donut chart</span><span class="tag">Sector timeline</span>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <h4>ai_impact.html — Adoption &amp; risk</h4>
+      <p>S-curve visualization of AI adoption, productivity boost, and the Frey &amp; Osborne occupation risk chart.
+         Pulls <code>/api/oxford-risk</code> + <code>/api/oxford-full</code> for the bar chart.</p>
+      <div class="badge-list">
+        <span class="tag">/api/oxford-risk</span><span class="tag">S-curve</span><span class="tag">Risk bars</span>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <h4>validation.html — Backtest + LLM</h4>
+      <p>Three sections: (1) backtest chart with model vs actual 2000–2020 unemployment, (2) Monte Carlo 95% CI band,
+         (3) Arabic LLM-generated advisory report. Includes a model picker populated from <code>/api/models</code>.</p>
+      <div class="badge-list">
+        <span class="tag">/api/validate</span><span class="tag">/api/monte-carlo</span><span class="tag">/api/analyze</span><span class="tag">Arabic RTL</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── 9. APP.JS ─────────────────────────── -->
+<section class="major" id="sec-9">
+  <h2><span class="num">§9</span> Frontend: <code>app.js</code> — Shared API + Chart Layer</h2>
+
+  <p>
+    A single 292-line script that every page loads. It defines global state, API helpers, 5 chart wrappers,
+    and the slider/country-selector wiring. No framework, no bundler.
+  </p>
+
+  <h3>9.1 Global state</h3>
+<pre><code class="language-javascript">window.SIM = {
+  scenario:       'moderate',
+  horizon:        20,
+  adoptionSpeed:  1.0,
+  automationRate: 5,      // display-only %
+  country:        'WLD',  // World Bank country code
+  data:           null,   // last simulation result
+};</code></pre>
+
+  <h3>9.2 Key helpers</h3>
+  <table>
+    <thead><tr><th>Function</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>apiFetch(path, opts)</code></td><td>Wraps <code>fetch</code>, throws on non-2xx, returns parsed JSON</td></tr>
+      <tr><td><code>simURL(scenario)</code></td><td>Builds <code>/api/simulate</code> URL with all current sliders applied</td></tr>
+      <tr><td><code>updateKPIs(data)</code></td><td>Updates the 5 headline KPI cards from a simulation result</td></tr>
+      <tr><td><code>showLoading/hideLoading</code></td><td>Toggle the loading overlay</td></tr>
+      <tr><td><code>toast(msg, type)</code></td><td>4-second toast notification</td></tr>
+      <tr><td><code>lineChart, areaChart, barChart, donutChart, rangeAreaChart</code></td><td>Five ApexCharts wrappers with shared dark-theme styling</td></tr>
+      <tr><td><code>wireSliders()</code></td><td>Binds sidebar sliders to <code>window.SIM</code></td></tr>
+      <tr><td><code>injectCountrySelect()</code></td><td>Fetches country list and injects a dropdown into every sidebar</td></tr>
+      <tr><td><code>highlightNav()</code></td><td>Highlights the current page in the sidebar nav</td></tr>
+    </tbody>
+  </table>
+
+  <h3>9.3 The API fetch wrapper</h3>
+  <div class="split">
+    <div class="pane">
+      <div class="pane-label">Code</div>
+<pre><code class="language-javascript">async function apiFetch(path, options = {}) {
+  const res = await fetch(API_BASE + path, options);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}</code></pre>
+    </div>
+    <div class="pane">
+      <div class="pane-label">Logic flow</div>
+      <div class="mermaid">
+flowchart TD
+    A[path, options] --> B["fetch(API_BASE + path)"]
+    B --> C{res.ok?<br/>HTTP 2xx}
+    C -->|No| D[Parse error body<br/>fallback to statusText]
+    D --> E[Throw Error]
+    C -->|Yes| F[Parse JSON, return]
+    style F fill:#238636,color:#fff
+    style E fill:#f85149,color:#fff
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── 10. DATA SOURCES ─────────────────────────── -->
+<section class="major" id="sec-10">
+  <h2><span class="num">§10</span> Data Sources</h2>
+
+  <h3>10.1 World Bank Open Data — 7 indicators</h3>
+  <table>
+    <thead><tr><th>Code</th><th>Indicator</th><th>Used in</th></tr></thead>
+    <tbody>
+      <tr><td><code>SL.EMP.TOTL</code></td><td>Employment, total (WLD only)</td><td>Country baseline</td></tr>
+      <tr><td><code>SL.TLF.TOTL.IN</code></td><td>Labor force, total (persons)</td><td>Country baseline</td></tr>
+      <tr><td><code>SL.UEM.TOTL.ZS</code></td><td>Unemployment, total (% of labor force)</td><td>Baseline + backtest</td></tr>
+      <tr><td><code>NY.GDP.MKTP.CD</code></td><td>GDP, market price, current US$</td><td>Country baseline</td></tr>
+      <tr><td><code>SL.AGR.EMPL.ZS</code></td><td>Employment in agriculture (%)</td><td>Sector shares</td></tr>
+      <tr><td><code>SL.IND.EMPL.ZS</code></td><td>Employment in industry (%)</td><td>Sector shares</td></tr>
+      <tr><td><code>SL.SRV.EMPL.ZS</code></td><td>Employment in services (%)</td><td>Sector shares</td></tr>
+    </tbody>
+  </table>
+
+  <h3>10.2 Bureau of Labor Statistics — wage calibration</h3>
+  <p>
+    The 5 skill-tier base wages in <code>SKILLS</code> are calibrated to <strong>BLS OEWS May 2024</strong> national
+    mean annual wages for representative occupations:
+  </p>
+  <table>
+    <thead><tr><th>Tier</th><th>Base wage</th><th>Representative occupations</th></tr></thead>
+    <tbody>
+      <tr><td>L1_basic</td><td>$33,000</td><td>Food prep, cashiers, janitors</td></tr>
+      <tr><td>L2_semi</td><td>$49,000</td><td>Machine operators, truck drivers</td></tr>
+      <tr><td>L3_intermediate</td><td>$73,000</td><td>Admin assistants, registered nurses</td></tr>
+      <tr><td>L4_advanced</td><td>$115,000</td><td>Engineers, general managers</td></tr>
+      <tr><td>L5_expert</td><td>$200,000</td><td>Executives, lawyers, surgeons</td></tr>
+    </tbody>
+  </table>
+
+  <h3>10.3 Frey &amp; Osborne 2013 — automation risk</h3>
+  <p>
+    The <code>backend/data/frey_osborne.csv</code> file contains a curated subset of <em>"The Future of Employment:
+    How Susceptible Are Jobs to Computerisation?"</em> by Carl Benedikt Frey and Michael A. Osborne (Oxford Martin
+    School, 2013). The original Appendix A ranks 702 occupations by automation probability; this project includes
+    ~50 spanning the full range, plus a 10-category roll-up <code>OXFORD_RISK_DATA</code> defined in <code>app.py</code>.
+  </p>
+</section>
+
+<!-- ─────────────────────────── 11. VALIDATION ─────────────────────────── -->
+<section class="major" id="sec-11">
+  <h2><span class="num">§11</span> Validation &amp; Accuracy</h2>
+
+  <p>
+    The project validates the model in three independent ways:
+  </p>
+
+  <h3>11.1 Historical backtest (<code>/api/validate</code>)</h3>
+  <p>
+    Runs a damped version of the simulation from 2000 to 2020 and compares predicted unemployment to actual World
+    Bank data. The S-curve is multiplied by 0.5 and uses <code>speed=0.8</code> to reflect that AI adoption was
+    minimal during this period. Reports Mean Absolute Error (MAE) and an accuracy score
+    (<code>max(0, 100 − MAE × 10)</code>).
+  </p>
+
+  <h3>11.2 Monte Carlo confidence bands (<code>/api/monte-carlo</code>)</h3>
+  <p>
+    Runs 1,000 simulations with randomized parameters:
+  </p>
+  <ul>
+    <li><code>auto_rate</code> ~ Uniform(0.02, 0.10)</li>
+    <li><code>speed</code> ~ Uniform(0.60, 1.50)</li>
+    <li>Initial <code>total_jobs</code> and <code>workforce</code> jittered by ±5%</li>
+  </ul>
+  <p>
+    Output includes the mean trajectory and the 2.5th / 97.5th percentile bounds — i.e., the 95% confidence interval.
+    Reproducible via <code>np.random.default_rng(42)</code>.
+  </p>
+
+  <h3>11.3 Sensitivity analysis (<code>/api/sensitivity</code>)</h3>
+  <p>
+    Perturbs each parameter by ±20% and measures the change in final-year unemployment. Outputs the impact magnitude
+    for both directions so the user can identify which knobs matter most.
+  </p>
+
+  <h3>11.4 Cross-validation: macro model vs. ML forecast</h3>
+  <p>
+    Every <code>/api/simulate</code> response includes the <code>ml_forecast</code> field — an independent
+    RandomForest projection. The user can visually compare both lines on the same axis. Divergence is informative:
+    when the macro model and ML model agree, confidence is higher; when they disagree, the macro model's structural
+    assumptions are doing the work.
+  </p>
+</section>
+
+<!-- ─────────────────────────── 12. RUNNING ─────────────────────────── -->
+<section class="major" id="sec-12">
+  <h2><span class="num">§12</span> Running the Project</h2>
+
+  <h3>12.1 Prerequisites</h3>
+  <ul>
+    <li>Python 3.10+ (tested on 3.11 and 3.12)</li>
+    <li>Internet connection for World Bank API calls</li>
+    <li><em>Optional:</em> <a href="https://ollama.com">Ollama</a> installed locally for AI advisory reports</li>
+  </ul>
+
+  <h3>12.2 Installation</h3>
+<pre><code class="language-bash"># Clone or download the project
+cd MODEL-SIMULATION-CLEAN
+
+# Install Python dependencies
+python -m pip install -r requirements.txt</code></pre>
+
+  <h3>12.3 Run the backend (Terminal 1)</h3>
+<pre><code class="language-bash">python -m uvicorn backend.app:app --reload --port 8000</code></pre>
+  <p>The API will be available at <code>http://localhost:8000</code>. Interactive docs auto-generated at <code>http://localhost:8000/docs</code>.</p>
+
+  <h3>12.4 Run the frontend (Terminal 2)</h3>
+<pre><code class="language-bash">python -m http.server 5500 --directory frontend</code></pre>
+  <p>Open the dashboard at <code>http://localhost:5500/index.html</code>.</p>
+
+  <h3>12.5 Optional: Ollama for AI reports</h3>
+<pre><code class="language-bash"># Install Ollama from ollama.com, then:
+ollama pull qwen3.5:9b              # Fully local, ~6.6 GB
+# OR
+ollama pull kimi-k2.6:cloud         # Cloud-routed, faster
+
+# Override the model via env var
+$env:OLLAMA_MODEL = "qwen3.5:9b"</code></pre>
+
+  <h3>12.6 Verifying the install</h3>
+<pre><code class="language-bash"># Smoke test
+python test_smoke.py
+
+# Manual API check
+curl http://localhost:8000/api/baseline?country=USA</code></pre>
+</section>
+
+<!-- ─────────────────────────── 13. LIMITATIONS ─────────────────────────── -->
+<section class="major" id="sec-13">
+  <h2><span class="num">§13</span> Model Limitations &amp; Honest Caveats</h2>
+
+  <div class="callout warning">
+    <strong>This is a teaching/exploratory model, not a forecasting tool.</strong>
+    The numbers it produces should be understood as illustrating mechanisms, not predicting outcomes.
+  </div>
+
+  <h3>13.1 Structural assumptions</h3>
+  <ul>
+    <li><strong>Fixed skill distribution.</strong> The 20/30/25/15/10 split across L1–L5 is held constant for 20 years.
+        In reality, education and reskilling shift this distribution.</li>
+    <li><strong>Hardcoded sector sub-ratios.</strong> The Services bucket is split Tech/Healthcare/Services-other
+        using fixed 18%/24%/58% ratios, because the World Bank doesn't break Services down further.</li>
+    <li><strong>One job-creation ratio.</strong> The assumption that AI creates 0.6 new jobs per 1 destroyed is a
+        single global constant. Different scenarios in literature range from 0.3 to 1.2.</li>
+    <li><strong>No migration, no policy intervention.</strong> The model has no government, no UBI, no retraining
+        programs, no minimum wage changes.</li>
+    <li><strong>Linear wage pressure.</strong> Wages move proportionally to adoption with a single coefficient per
+        tier — no kinks, no thresholds.</li>
+  </ul>
+
+  <h3>13.2 Forecast caveats</h3>
+  <ul>
+    <li><strong>RandomForest is trained in-sample.</strong> Reported "accuracy" is training accuracy, not held-out.
+        For a serious forecast, time-series cross-validation would be required.</li>
+    <li><strong>The S-curve midpoint of year 10 is an assumption</strong>, not derived from data. Real AI adoption
+        could be faster (a few years) or slower (decades).</li>
+    <li><strong>Gini is computed from synthetic incomes</strong>, scaled down by a factor of 10⁷ for performance.
+        The ratio is preserved but absolute counts are not real.</li>
+  </ul>
+
+  <h3>13.3 Data caveats</h3>
+  <ul>
+    <li>World Bank data has 1–2 year publication lag — the "current" year is rarely available.</li>
+    <li>For most countries, <code>SL.EMP.TOTL</code> is missing and employment is derived as
+        <code>labor_force × (1 − unemployment/100)</code>, which slightly undercounts subsistence/informal labor.</li>
+    <li>Frey &amp; Osborne 2013 is now 13 years old — automation probabilities for many roles look different today
+        (especially for "creative" work that LLMs have made more automatable than predicted).</li>
+  </ul>
+</section>
+
+<!-- ─────────────────────────── 14. REFERENCES ─────────────────────────── -->
+<section class="major" id="sec-14">
+  <h2><span class="num">§14</span> References &amp; Further Reading</h2>
+
+  <h3>14.1 Data sources</h3>
+  <ul>
+    <li><a href="https://data.worldbank.org/indicator" target="_blank">World Bank Open Data — Indicator catalog</a></li>
+    <li><a href="https://www.bls.gov/oes/" target="_blank">U.S. Bureau of Labor Statistics — Occupational Employment and Wage Statistics</a></li>
+    <li>Frey, C. B., &amp; Osborne, M. A. (2013). <em>The Future of Employment: How Susceptible Are Jobs to Computerisation?</em>
+        Oxford Martin School. <a href="https://www.oxfordmartin.ox.ac.uk/publications/the-future-of-employment/" target="_blank">[link]</a></li>
+  </ul>
+
+  <h3>14.2 Methodological references</h3>
+  <ul>
+    <li>Acemoglu, D., &amp; Restrepo, P. (2020). "Robots and Jobs." <em>Journal of Political Economy</em>, 128(6).</li>
+    <li>Brynjolfsson, E., &amp; McAfee, A. (2014). <em>The Second Machine Age</em>. W. W. Norton.</li>
+    <li>Autor, D. H. (2015). "Why Are There Still So Many Jobs?" <em>Journal of Economic Perspectives</em>, 29(3).</li>
+    <li>International Labour Organization. (2023). <em>Generative AI and Jobs: A Global Analysis.</em></li>
+  </ul>
+
+  <h3>14.3 Technical references</h3>
+  <ul>
+    <li><a href="https://fastapi.tiangolo.com/" target="_blank">FastAPI documentation</a></li>
+    <li><a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">RandomForestRegressor</a></li>
+    <li><a href="https://apexcharts.com/" target="_blank">ApexCharts</a></li>
+    <li><a href="https://ollama.com/library" target="_blank">Ollama model library</a></li>
+  </ul>
+
+  <h3>14.4 Companion documents in this repository</h3>
+  <ul>
+    <li><a href="SIMULATION_EXPLAINED.md"><code>SIMULATION_EXPLAINED.md</code></a> — Line-by-line walkthrough of the engine (1,600 lines)</li>
+    <li><a href="KEYWORDS_GLOSSARY.md"><code>KEYWORDS_GLOSSARY.md</code></a> — Every name, code, and term decoded</li>
+    <li><a href="ARCHITECTURE_DIAGRAMS.html"><code>ARCHITECTURE_DIAGRAMS.html</code></a> — Nine system-level diagrams</li>
+    <li><a href="CODE_TOUR.html"><code>CODE_TOUR.html</code></a> — Function-by-function visual code tour</li>
+    <li><a href="README.md"><code>README.md</code></a> — Quick-start guide</li>
+  </ul>
+</section>
+
+</main>
+
+<footer>
+  <div>AI Labor Market Impact Simulation — Project Documentation</div>
+  <div class="links" style="margin-top: 0.5rem;">
+    <a href="README.md">README</a> ·
+    <a href="SIMULATION_EXPLAINED.md">Engine Walkthrough</a> ·
+    <a href="KEYWORDS_GLOSSARY.md">Glossary</a> ·
+    <a href="ARCHITECTURE_DIAGRAMS.html">Architecture</a> ·
+    <a href="CODE_TOUR.html">Code Tour</a>
+  </div>
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#1c2128',
+      primaryColor: '#1f6feb',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#58a6ff',
+      lineColor: '#8b949e',
+      secondaryColor: '#1c2128',
+      tertiaryColor: '#161b22',
+      mainBkg: '#1f6feb',
+      secondBkg: '#238636',
+      tertiaryBkg: '#8957e5'
+    },
+    flowchart: { curve: 'basis', padding: 15, nodeSpacing: 35, rankSpacing: 45 },
+    sequence: { actorMargin: 70, messageMargin: 35 }
+  });
+</script>
+
+</body>
+</html>
